@@ -11,7 +11,7 @@ import logging
 from typing import Optional, List, Dict, Any
 from datetime import datetime, timedelta
 
-from fastapi import APIRouter, HTTPException, Query, BackgroundTask
+from fastapi import APIRouter, HTTPException, Query, BackgroundTasks
 from fastapi.responses import FileResponse, JSONResponse
 from sqlalchemy import func, desc
 

@@ -86,30 +86,15 @@ Examples:
 
 
 def check_env() -> None:
-    """Check that critical environment variables are set."""
+    """Check that at least one LLM provider key is set."""
     logger = logging.getLogger(__name__)
 
-    required = {
-        "GOOGLE_API_KEY": "Gemini AI (rewrite + image gen)",
-    }
+    llm_keys = ["GOOGLE_API_KEY", "GROQ_API_KEY", "OPENAI_API_KEY", "ANTHROPIC_API_KEY"]
+    found_llm = any(os.getenv(k) and not os.getenv(k).startswith("your_") for k in llm_keys)
 
-    optional = {
-        "REDDIT_CLIENT_ID": "Reddit live posting",
-        "REDDIT_CLIENT_SECRET": "Reddit live posting",
-        "REDDIT_USERNAME": "Reddit live posting",
-        "REDDIT_PASSWORD": "Reddit live posting",
-        "TWITTER_API_KEY": "Twitter live posting",
-        "TWITTER_API_SECRET": "Twitter live posting",
-        "TWITTER_ACCESS_TOKEN": "Twitter live posting",
-        "TWITTER_ACCESS_SECRET": "Twitter live posting",
-    }
-
-    # Check required keys
-    for key, purpose in required.items():
-        if not os.getenv(key):
-            logger.error(f"MISSING REQUIRED: {key} ({purpose})")
-            logger.error("Copy .env.example to .env and fill in your keys")
-            sys.exit(1)
+    if not found_llm:
+        logger.warning("No LLM API Key found in .env! (Set GROQ_API_KEY, OPENAI_API_KEY, ANTHROPIC_API_KEY, or GOOGLE_API_KEY)")
+        logger.warning("Copy .env.example to .env or configure keys in the Dashboard UI at http://localhost:8000/#settings")
 
     # Check optional keys (warn but don't exit)
     missing_optional = []

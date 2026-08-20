@@ -133,20 +133,19 @@ const DashboardPage = {
           {
             label: 'Total Scraped',
             data: data.totals,
-            borderColor: '#8b5cf6',
-            backgroundColor: 'rgba(139, 92, 246, 0.2)',
-            borderWidth: 3,
+            borderColor: '#d97757',
+            backgroundColor: 'rgba(217, 119, 87, 0.12)',
+            borderWidth: 2,
             fill: true,
-            tension: 0.4
+            tension: 0.3
           },
           {
             label: 'Published',
             data: data.published,
-            borderColor: '#10b981',
-            backgroundColor: 'rgba(16, 185, 129, 0.1)',
-            borderWidth: 3,
-            fill: true,
-            tension: 0.4
+            borderColor: '#2e7d32',
+            backgroundColor: 'transparent',
+            borderWidth: 2,
+            tension: 0.3
           }
         ]
       },
@@ -154,11 +153,11 @@ const DashboardPage = {
         responsive: true,
         maintainAspectRatio: false,
         plugins: {
-          legend: { labels: { color: '#94a3b8', font: { family: 'Plus Jakarta Sans', weight: '600' } } }
+          legend: { labels: { color: '#6e6b65', font: { family: 'Inter', size: 11 } } }
         },
         scales: {
-          x: { grid: { color: 'rgba(255, 255, 255, 0.05)' }, ticks: { color: '#94a3b8' } },
-          y: { grid: { color: 'rgba(255, 255, 255, 0.05)' }, ticks: { color: '#94a3b8', precision: 0 } }
+          x: { grid: { color: '#e5e0d8' }, ticks: { color: '#6e6b65' } },
+          y: { grid: { color: '#e5e0d8' }, ticks: { color: '#6e6b65', precision: 0 } }
         }
       }
     });
@@ -174,7 +173,7 @@ const DashboardPage = {
         labels: ['Reddit (Live)', 'Twitter (Live)', 'Instagram (Queue)', 'LinkedIn (Queue)'],
         datasets: [{
           data: [platforms.reddit, platforms.twitter, platforms.instagram, platforms.linkedin],
-          backgroundColor: ['#ff4500', '#00f2fe', '#e1306c', '#0077b5'],
+          backgroundColor: ['#e05326', '#2b7bb9', '#c13584', '#0077b5'],
           borderWidth: 0
         }]
       },
@@ -182,7 +181,7 @@ const DashboardPage = {
         responsive: true,
         maintainAspectRatio: false,
         plugins: {
-          legend: { position: 'bottom', labels: { color: '#94a3b8', font: { family: 'Plus Jakarta Sans', size: 11, weight: '600' } } }
+          legend: { position: 'bottom', labels: { color: '#6e6b65', font: { family: 'Inter', size: 11 } } }
         }
       }
     });

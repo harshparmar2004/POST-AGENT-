@@ -550,7 +550,7 @@ def get_logs(lines: int = 200):
 # ---------------------------------------------------------------------------
 
 @router.post("/pipeline/run")
-def trigger_pipeline(max_articles: Optional[int] = Query(None, description="Max articles per source/stage")):
+def trigger_pipeline(background_tasks: BackgroundTasks, max_articles: Optional[int] = Query(None, description="Max articles per source/stage")):
     """Triggers the full automation pipeline asynchronously in the background."""
     global _pipeline_state
     if _pipeline_state["is_running"]:
@@ -559,8 +559,8 @@ def trigger_pipeline(max_articles: Optional[int] = Query(None, description="Max 
             content={"message": "Pipeline is already running!", "state": _pipeline_state}
         )
 
-    # Start task in background thread
-    asyncio.create_task(asyncio.to_thread(_run_pipeline_background, max_articles))
+    # Start background task safely via FastAPI BackgroundTasks
+    background_tasks.add_task(_run_pipeline_background, max_articles)
 
     return {
         "success": True,

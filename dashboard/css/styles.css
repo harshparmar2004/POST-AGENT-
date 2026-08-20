@@ -1,5 +1,5 @@
 /* ============================================================
-   NewsFlow Dashboard — Claude Warm Beige & Terracotta Minimal Square Box Theme
+   NewsFlow Dashboard — Claude Minimal Design with Softened Rounded Corners & Visualization Features
    ============================================================ */
 
 :root {
@@ -10,13 +10,12 @@
   --bg-card-hover: #fdfbf7;
   --bg-sidebar: #f5f0e6;         /* Soft Muted Sand Sidebar */
   
-  --border-color: #e5e0d8;       /* Thin Crisp Warm Gray Border */
+  --border-color: #e5e0d8;       /* Thin Soft Warm Gray Border */
   --border-color-hover: #d97757;
   
   /* Primary Claude Accents */
   --primary-purple: #d97757;     /* Claude Terracotta Orange */
   --primary-indigo: #cc6343;     /* Deep Warm Terracotta */
-  --primary-gradient: #d97757;
   
   /* Platform Colors (Claude Muted Palette) */
   --color-reddit: #e05326;
@@ -68,7 +67,7 @@ body.dark-theme {
 }
 
 /* ------------------------------------------------------------
-   Sidebar (Clean Square Minimal)
+   Sidebar
    ------------------------------------------------------------ */
 .sidebar {
   width: var(--sidebar-width);
@@ -92,9 +91,9 @@ body.dark-theme {
 }
 
 .brand-logo {
-  width: 36px;
-  height: 36px;
-  border-radius: 4px; /* Crisp Square */
+  width: 38px;
+  height: 38px;
+  border-radius: 8px; /* Soft Rounded */
   background: var(--primary-purple);
   display: flex;
   align-items: center;
@@ -130,7 +129,7 @@ body.dark-theme {
   padding: 10px 14px;
   color: var(--text-muted);
   text-decoration: none;
-  border-radius: 4px; /* Square */
+  border-radius: 8px; /* Soft Rounded */
   font-size: 0.9rem;
   font-weight: 500;
   transition: all 0.12s ease;
@@ -155,8 +154,8 @@ body.dark-theme {
   margin-left: auto;
   font-size: 0.72rem;
   font-weight: 600;
-  padding: 2px 7px;
-  border-radius: 3px; /* Square */
+  padding: 2px 8px;
+  border-radius: 6px;
   background: rgba(31, 30, 27, 0.06);
   color: var(--text-main);
 }
@@ -188,7 +187,7 @@ body.dark-theme {
   background: rgba(46, 125, 50, 0.08);
   border: 1px solid rgba(46, 125, 50, 0.2);
   padding: 6px 10px;
-  border-radius: 4px;
+  border-radius: 6px;
   font-weight: 500;
 }
 
@@ -255,8 +254,8 @@ body.dark-theme {
   align-items: center;
   gap: 8px;
   font-size: 0.82rem;
-  padding: 5px 12px;
-  border-radius: 4px; /* Square */
+  padding: 6px 14px;
+  border-radius: 6px;
   background: var(--bg-card);
   border: 1px solid var(--border-color);
   color: var(--text-muted);
@@ -285,15 +284,15 @@ body.dark-theme {
 }
 
 /* ------------------------------------------------------------
-   Buttons & Badges (Square Box Style)
+   Buttons & Badges (Soft Rounded 8px Style)
    ------------------------------------------------------------ */
 .btn {
   display: inline-flex;
   align-items: center;
   gap: 8px;
-  padding: 8px 16px;
-  border-radius: 4px; /* Square Box */
-  font-size: 0.85rem;
+  padding: 8px 18px;
+  border-radius: 8px; /* Soft Rounded */
+  font-size: 0.86rem;
   font-weight: 600;
   cursor: pointer;
   border: none;
@@ -321,9 +320,9 @@ body.dark-theme {
 }
 
 .btn-icon {
-  width: 32px;
-  height: 32px;
-  border-radius: 4px; /* Square */
+  width: 34px;
+  height: 34px;
+  border-radius: 8px;
   border: 1px solid var(--border-color);
   background: var(--bg-card);
   color: var(--text-muted);
@@ -342,8 +341,8 @@ body.dark-theme {
 .badge {
   display: inline-flex;
   align-items: center;
-  padding: 3px 8px;
-  border-radius: 3px; /* Square Badge */
+  padding: 4px 9px;
+  border-radius: 6px;
   font-size: 0.72rem;
   font-weight: 600;
   text-transform: uppercase;
@@ -357,7 +356,7 @@ body.dark-theme {
 .badge-failed { background: rgba(198, 40, 40, 0.12); color: var(--status-failed); border: 1px solid rgba(198, 40, 40, 0.25); }
 
 /* ------------------------------------------------------------
-   Page Container & Square Cards
+   Page Container & Soft Cards
    ------------------------------------------------------------ */
 .page-container {
   padding: 28px;
@@ -367,43 +366,43 @@ body.dark-theme {
 .glass-card {
   background: var(--bg-card);
   border: 1px solid var(--border-color);
-  border-radius: 4px; /* Crisp Square Box */
-  padding: 20px;
-  transition: border-color 0.12s ease;
+  border-radius: 10px; /* Soft Rounded */
+  padding: 22px;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+  box-shadow: 0 2px 8px rgba(31, 30, 27, 0.03);
 }
 
 .glass-card:hover {
-  border-color: var(--primary-purple);
+  border-color: rgba(217, 119, 87, 0.35);
 }
 
 /* ------------------------------------------------------------
-   Dashboard Overview Grid — SMALL COMPACT SQUARE BOXES
+   Dashboard Overview Grid — SOFT COMPACT BOXES
    ------------------------------------------------------------ */
 .stats-grid {
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
   gap: 16px;
   margin-bottom: 24px;
 }
 
 .stat-card {
   display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  justify-content: space-between;
-  height: 120px; /* Small Square Box */
+  align-items: center;
+  gap: 14px;
   padding: 16px;
   position: relative;
+  overflow: hidden;
 }
 
 .stat-icon {
-  width: 32px;
-  height: 32px;
-  border-radius: 4px;
+  width: 44px;
+  height: 44px;
+  border-radius: 8px;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 1.1rem;
+  font-size: 1.2rem;
   background: var(--bg-surface);
 }
 
@@ -418,7 +417,6 @@ body.dark-theme {
   font-weight: 600;
   line-height: 1;
   color: var(--text-main);
-  margin-top: 8px;
 }
 
 .stat-data p {
@@ -428,7 +426,29 @@ body.dark-theme {
   font-weight: 500;
 }
 
-/* Charts Section */
+/* Visual Breakdown Progress Bars */
+.progress-bar-wrapper {
+  margin-bottom: 12px;
+}
+.progress-bar-header {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.82rem;
+  margin-bottom: 4px;
+}
+.progress-bar-track {
+  height: 6px;
+  border-radius: 4px;
+  background: var(--bg-surface);
+  overflow: hidden;
+}
+.progress-bar-fill {
+  height: 100%;
+  border-radius: 4px;
+  transition: width 0.3s ease;
+}
+
+/* Charts Section Grid */
 .charts-grid {
   display: grid;
   grid-template-columns: 2fr 1fr;
@@ -438,7 +458,7 @@ body.dark-theme {
 
 .chart-card h3 {
   font-family: var(--font-serif);
-  font-size: 1.1rem;
+  font-size: 1.15rem;
   font-weight: 600;
   margin-bottom: 16px;
   display: flex;
@@ -454,7 +474,7 @@ body.dark-theme {
 }
 
 /* ------------------------------------------------------------
-   Tables (Square Minimal Rows)
+   Tables
    ------------------------------------------------------------ */
 .table-card {
   overflow: hidden;
@@ -487,8 +507,8 @@ body.dark-theme {
 
 .search-box input {
   width: 100%;
-  padding: 8px 12px 8px 36px;
-  border-radius: 4px; /* Square */
+  padding: 9px 12px 9px 36px;
+  border-radius: 8px;
   background: var(--bg-surface);
   border: 1px solid var(--border-color);
   color: var(--text-main);
@@ -501,8 +521,8 @@ body.dark-theme {
 }
 
 .filter-select {
-  padding: 8px 14px;
-  border-radius: 4px; /* Square */
+  padding: 9px 14px;
+  border-radius: 8px;
   background: var(--bg-surface);
   border: 1px solid var(--border-color);
   color: var(--text-main);
@@ -560,13 +580,13 @@ body.dark-theme {
 }
 
 .platform-chip {
-  width: 24px;
-  height: 24px;
-  border-radius: 3px; /* Square */
+  width: 26px;
+  height: 26px;
+  border-radius: 6px;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 0.72rem;
+  font-size: 0.75rem;
   opacity: 0.25;
   background: rgba(31, 30, 27, 0.05);
 }
@@ -581,8 +601,8 @@ body.dark-theme {
    ------------------------------------------------------------ */
 .sources-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
-  gap: 16px;
+  grid-template-columns: repeat(auto-fill, minmax(270px, 1fr));
+  gap: 18px;
 }
 
 .source-card {
@@ -607,8 +627,8 @@ body.dark-theme {
 .tier-tag {
   font-size: 0.68rem;
   font-weight: 700;
-  padding: 2px 6px;
-  border-radius: 3px;
+  padding: 3px 7px;
+  border-radius: 4px;
 }
 
 .tier-tag.tier-1 { background: rgba(46, 125, 50, 0.12); color: #2e7d32; }
@@ -617,8 +637,8 @@ body.dark-theme {
 .source-meta {
   display: flex;
   flex-direction: column;
-  gap: 4px;
-  font-size: 0.82rem;
+  gap: 5px;
+  font-size: 0.84rem;
   color: var(--text-muted);
 }
 
@@ -633,7 +653,7 @@ body.dark-theme {
 
 .tab-btn {
   padding: 8px 16px;
-  border-radius: 4px; /* Square */
+  border-radius: 8px;
   border: 1px solid var(--border-color);
   background: var(--bg-card);
   color: var(--text-muted);
@@ -666,7 +686,7 @@ body.dark-theme {
 .queue-img-wrapper {
   width: 100%;
   height: 160px;
-  border-radius: 4px; /* Square */
+  border-radius: 8px;
   overflow: hidden;
   background: var(--bg-surface);
   border: 1px solid var(--border-color);
@@ -684,7 +704,7 @@ body.dark-theme {
   color: var(--text-main);
   background: var(--bg-surface);
   padding: 10px;
-  border-radius: 4px;
+  border-radius: 6px;
   border: 1px solid var(--border-color);
   max-height: 110px;
   overflow-y: auto;
@@ -696,7 +716,7 @@ body.dark-theme {
 .terminal-window {
   background: #1f1e1b;
   border: 1px solid var(--border-color);
-  border-radius: 4px;
+  border-radius: 8px;
   overflow: hidden;
   font-family: var(--font-mono);
   color: #e5e0d8;
@@ -764,7 +784,7 @@ body.dark-theme {
   z-index: 101;
   background: var(--bg-card);
   border: 1px solid var(--border-color);
-  border-radius: 4px; /* Square */
+  border-radius: 10px;
 }
 
 .modal-header {
@@ -776,7 +796,7 @@ body.dark-theme {
 
 .modal-header h2 {
   font-family: var(--font-serif);
-  font-size: 1.3rem;
+  font-size: 1.35rem;
   margin-top: 6px;
 }
 
@@ -800,7 +820,7 @@ body.dark-theme {
 .platform-preview-box {
   background: var(--bg-surface);
   border: 1px solid var(--border-color);
-  border-radius: 4px;
+  border-radius: 6px;
   padding: 14px;
   font-size: 0.88rem;
   line-height: 1.5;
@@ -820,7 +840,7 @@ body.dark-theme {
 
 .toast {
   padding: 10px 18px;
-  border-radius: 4px; /* Square */
+  border-radius: 6px;
   background: #1f1e1b;
   border: 1px solid var(--primary-purple);
   color: #fff;

@@ -64,7 +64,7 @@ def _run_pipeline_background(max_articles: Optional[int] = None):
 
 @router.get("/stats")
 def get_stats():
-    """Returns overview statistics for dashboard metrics and platform distribution."""
+    """Returns overview statistics for dashboard metrics, platform distribution, categories and sources."""
     with get_session() as session:
         total = session.query(func.count(Article.id)).scalar() or 0
         scraped = session.query(func.count(Article.id)).filter(Article.status == "scraped").scalar() or 0
@@ -77,6 +77,14 @@ def get_stats():
         twitter_posted = session.query(func.count(Article.id)).filter(Article.twitter_posted == True).scalar() or 0
         instagram_queued = session.query(func.count(Article.id)).filter(Article.instagram_queued == True).scalar() or 0
         linkedin_queued = session.query(func.count(Article.id)).filter(Article.linkedin_queued == True).scalar() or 0
+
+        # Category breakdown
+        cat_rows = session.query(Article.category, func.count(Article.id)).group_by(Article.category).all()
+        categories = {cat or "General": cnt for cat, cnt in cat_rows}
+
+        # Source breakdown
+        src_rows = session.query(Article.source, func.count(Article.id)).group_by(Article.source).all()
+        sources_breakdown = {src or "Unknown": cnt for src, cnt in src_rows}
 
     return {
         "summary": {
@@ -93,6 +101,8 @@ def get_stats():
             "instagram": instagram_queued,
             "linkedin": linkedin_queued,
         },
+        "categories": categories,
+        "sources": sources_breakdown,
         "pipeline": _pipeline_state
     }
 

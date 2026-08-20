@@ -1,7 +1,9 @@
 /**
- * Dashboard Overview Page Renderer
+ * Dashboard Overview Page Renderer — Rich Visualization Features & Soft Claude Theme
  */
 const DashboardPage = {
+  currentDashboardFilter: 'all',
+
   async render(container) {
     container.innerHTML = `
       <!-- Stats Cards Row -->
@@ -39,7 +41,7 @@ const DashboardPage = {
         </div>
       </div>
 
-      <!-- Charts Section -->
+      <!-- Charts Section (Row 1) -->
       <div class="charts-grid">
         <div class="glass-card chart-card">
           <h3>
@@ -59,10 +61,35 @@ const DashboardPage = {
         </div>
       </div>
 
-      <!-- Recent Articles Table -->
+      <!-- Visualizations Row 2: Category Breakdown & Platform Progress -->
+      <div class="charts-grid" style="grid-template-columns: 1fr 1fr; margin-bottom: 24px;">
+        <div class="glass-card chart-card">
+          <h3>Category Distribution</h3>
+          <div class="chart-container">
+            <canvas id="categoryChart"></canvas>
+          </div>
+        </div>
+
+        <div class="glass-card chart-card">
+          <h3>Platform Pipeline Status</h3>
+          <div style="display: flex; flex-direction: column; gap: 14px; margin-top: 10px;" id="platform-progress-container">
+            <p>Loading platform progress...</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Recent Articles Table with Quick Filter Chips -->
       <div class="glass-card table-card">
         <div class="table-header-tools">
-          <h3 style="font-size: 1.05rem; font-weight: 600;">Recent Scraped Articles</h3>
+          <div style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap;">
+            <h3 style="font-size: 1.05rem; font-weight: 600; font-family: var(--font-serif);">Recent Articles</h3>
+            <div style="display: flex; gap: 6px;">
+              <button class="btn btn-secondary" style="padding: 4px 10px; font-size: 0.75rem;" onclick="DashboardPage.filterArticles('all')">All</button>
+              <button class="btn btn-secondary" style="padding: 4px 10px; font-size: 0.75rem;" onclick="DashboardPage.filterArticles('scraped')">Scraped</button>
+              <button class="btn btn-secondary" style="padding: 4px 10px; font-size: 0.75rem;" onclick="DashboardPage.filterArticles('ready')">Ready</button>
+              <button class="btn btn-secondary" style="padding: 4px 10px; font-size: 0.75rem;" onclick="DashboardPage.filterArticles('published')">Published</button>
+            </div>
+          </div>
           <a href="#articles" class="btn btn-secondary" style="font-size: 0.8rem; padding: 6px 14px;">View All Articles →</a>
         </div>
         <table class="data-table">
@@ -76,16 +103,14 @@ const DashboardPage = {
             </tr>
           </thead>
           <tbody id="recent-articles-tbody">
-            <tr><td colspan="5">Loading recent articles...</td></tr>
+            <tr><td colspan="5">Loading articles...</td></tr>
           </tbody>
         </table>
       </div>
     `;
 
-    // Re-create icons for freshly inserted DOM
     if (window.lucide) window.lucide.createIcons();
 
-    // Fetch data and render charts
     await this.loadData();
   },
 
@@ -93,7 +118,7 @@ const DashboardPage = {
     try {
       const stats = await App.fetchApi('/api/stats');
       const timeline = await App.fetchApi('/api/stats/timeline?days=14');
-      const articles = await App.fetchApi('/api/articles?limit=8');
+      const articles = await App.fetchApi(`/api/articles?limit=8${this.currentDashboardFilter !== 'all' ? '&status=' + this.currentDashboardFilter : ''}`);
 
       // Update counters
       document.getElementById('stat-total').textContent = stats.summary.total;
@@ -107,11 +132,11 @@ const DashboardPage = {
       if (navArticles) navArticles.textContent = stats.summary.total;
       if (navQueue) navQueue.textContent = stats.summary.queued;
 
-      // Render Timeline Chart
+      // Render Charts
       this.renderTimelineChart(timeline);
-
-      // Render Platform Chart
       this.renderPlatformChart(stats.platforms);
+      this.renderCategoryChart(stats.categories);
+      this.renderPlatformProgress(stats.platforms, stats.summary.total);
 
       // Render Table
       this.renderRecentTable(articles.articles);
@@ -187,19 +212,84 @@ const DashboardPage = {
     });
   },
 
+  renderCategoryChart(categories) {
+    const ctx = document.getElementById('categoryChart');
+    if (!ctx) return;
+
+    const labels = Object.keys(categories || {});
+    const values = Object.values(categories || {});
+
+    new Chart(ctx, {
+      type: 'bar',
+      data: {
+        labels: labels.length ? labels : ['Tech', 'General', 'AI'],
+        datasets: [{
+          label: 'Articles',
+          data: values.length ? values : [0, 0, 0],
+          backgroundColor: '#d97757',
+          borderRadius: 4
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          legend: { display: false }
+        },
+        scales: {
+          x: { grid: { display: false }, ticks: { color: '#6e6b65' } },
+          y: { grid: { color: '#e5e0d8' }, ticks: { color: '#6e6b65', precision: 0 } }
+        }
+      }
+    });
+  },
+
+  renderPlatformProgress(platforms, totalArticles) {
+    const container = document.getElementById('platform-progress-container');
+    if (!container) return;
+
+    const total = totalArticles || 1;
+    const items = [
+      { name: 'Reddit Live Posts', count: platforms.reddit, color: '#e05326' },
+      { name: 'Twitter / X Live Tweets', count: platforms.twitter, color: '#2b7bb9' },
+      { name: 'Instagram Queued Posts', count: platforms.instagram, color: '#c13584' },
+      { name: 'LinkedIn Queued Posts', count: platforms.linkedin, color: '#0077b5' },
+    ];
+
+    container.innerHTML = items.map(item => {
+      const pct = Math.min(100, Math.round((item.count / total) * 100));
+      return `
+        <div class="progress-bar-wrapper">
+          <div class="progress-bar-header">
+            <span><strong>${item.name}</strong></span>
+            <span style="color: var(--text-muted);">${item.count} posts (${pct}%)</span>
+          </div>
+          <div class="progress-bar-track">
+            <div class="progress-bar-fill" style="width: ${pct}%; background-color: ${item.color};"></div>
+          </div>
+        </div>
+      `;
+    }).join('');
+  },
+
+  filterArticles(status) {
+    this.currentDashboardFilter = status;
+    this.loadData();
+  },
+
   renderRecentTable(articles) {
     const tbody = document.getElementById('recent-articles-tbody');
     if (!tbody) return;
 
     if (!articles || articles.length === 0) {
-      tbody.innerHTML = '<tr><td colspan="5">No articles scraped yet. Click "Run Pipeline" above!</td></tr>';
+      tbody.innerHTML = '<tr><td colspan="5">No articles found. Click "Run Pipeline" above!</td></tr>';
       return;
     }
 
     tbody.innerHTML = articles.map(a => `
       <tr onclick="App.openArticleModal(${a.id})">
         <td class="article-title-cell">${a.title}</td>
-        <td><span class="badge" style="background: rgba(255,255,255,0.06); color: #e5e7eb;">${a.source}</span></td>
+        <td><span class="badge" style="background: rgba(31,30,27,0.06); color: var(--text-main);">${a.source}</span></td>
         <td><span class="badge badge-${a.status}">${a.status}</span></td>
         <td>
           <div class="platform-chips">

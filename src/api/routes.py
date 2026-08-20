@@ -424,6 +424,63 @@ def add_source(source_data: Dict[str, Any]):
     return {"success": True, "message": f"Source '{name}' added successfully!", "source": new_source}
 
 
+@router.api_route("/sources/{source_index}", methods=["PUT", "POST"])
+def update_source(source_index: int, source_data: Dict[str, Any]):
+    """Update an existing source link in sources.yaml by index."""
+    config_file = os.path.join(PROJECT_ROOT, "config", "sources.yaml")
+    with open(config_file, "r", encoding="utf-8") as f:
+        cfg = yaml.safe_load(f) or {}
+
+    sources = cfg.get("sources", [])
+    if source_index < 0 or source_index >= len(sources):
+        raise HTTPException(status_code=404, detail="Source index not found")
+
+    name = source_data.get("name", "").strip() or sources[source_index].get("name")
+    url = source_data.get("url", "").strip() or sources[source_index].get("url")
+    feed_url = source_data.get("feed_url", "").strip() if "feed_url" in source_data else sources[source_index].get("feed_url")
+    tier = int(source_data.get("tier", sources[source_index].get("tier", 1)))
+    category = source_data.get("category", sources[source_index].get("category", "tech")).strip()
+    subreddit = source_data.get("subreddit", sources[source_index].get("subreddit", "technology")).strip()
+    delay_seconds = int(source_data.get("delay_seconds", sources[source_index].get("delay_seconds", 2)))
+
+    sources[source_index] = {
+        "name": name,
+        "url": url,
+        "feed_url": feed_url,
+        "tier": tier,
+        "category": category,
+        "subreddit": subreddit,
+        "delay_seconds": delay_seconds,
+        "max_articles": sources[source_index].get("max_articles", 5)
+    }
+
+    cfg["sources"] = sources
+    with open(config_file, "w", encoding="utf-8") as f:
+        yaml.safe_dump(cfg, f, sort_keys=False)
+
+    return {"success": True, "message": f"Source '{name}' updated successfully!", "source": sources[source_index]}
+
+
+@router.api_route("/sources/{source_index}", methods=["DELETE"])
+def delete_source(source_index: int):
+    """Delete a source from sources.yaml by index."""
+    config_file = os.path.join(PROJECT_ROOT, "config", "sources.yaml")
+    with open(config_file, "r", encoding="utf-8") as f:
+        cfg = yaml.safe_load(f) or {}
+
+    sources = cfg.get("sources", [])
+    if source_index < 0 or source_index >= len(sources):
+        raise HTTPException(status_code=404, detail="Source index not found")
+
+    deleted_source = sources.pop(source_index)
+    cfg["sources"] = sources
+
+    with open(config_file, "w", encoding="utf-8") as f:
+        yaml.safe_dump(cfg, f, sort_keys=False)
+
+    return {"success": True, "message": f"Source '{deleted_source.get('name')}' deleted successfully!"}
+
+
 # ---------------------------------------------------------------------------
 # Auto-Pilot Mode Scheduler
 # ---------------------------------------------------------------------------

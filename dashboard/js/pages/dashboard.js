@@ -3,6 +3,7 @@
  */
 const DashboardPage = {
   currentDashboardFilter: 'all',
+  charts: {},
 
   async render(container) {
     container.innerHTML = `
@@ -132,7 +133,7 @@ const DashboardPage = {
       if (navArticles) navArticles.textContent = stats.summary.total;
       if (navQueue) navQueue.textContent = stats.summary.queued;
 
-      // Render Charts
+      // Render Charts safely
       this.renderTimelineChart(timeline);
       this.renderPlatformChart(stats.platforms);
       this.renderCategoryChart(stats.categories);
@@ -149,8 +150,9 @@ const DashboardPage = {
   renderTimelineChart(data) {
     const ctx = document.getElementById('timelineChart');
     if (!ctx) return;
+    if (this.charts.timeline) this.charts.timeline.destroy();
 
-    new Chart(ctx, {
+    this.charts.timeline = new Chart(ctx, {
       type: 'line',
       data: {
         labels: data.labels,
@@ -191,8 +193,9 @@ const DashboardPage = {
   renderPlatformChart(platforms) {
     const ctx = document.getElementById('platformChart');
     if (!ctx) return;
+    if (this.charts.platform) this.charts.platform.destroy();
 
-    new Chart(ctx, {
+    this.charts.platform = new Chart(ctx, {
       type: 'doughnut',
       data: {
         labels: ['Reddit (Live)', 'Twitter (Live)', 'Instagram (Queue)', 'LinkedIn (Queue)'],
@@ -215,11 +218,12 @@ const DashboardPage = {
   renderCategoryChart(categories) {
     const ctx = document.getElementById('categoryChart');
     if (!ctx) return;
+    if (this.charts.category) this.charts.category.destroy();
 
     const labels = Object.keys(categories || {});
     const values = Object.values(categories || {});
 
-    new Chart(ctx, {
+    this.charts.category = new Chart(ctx, {
       type: 'bar',
       data: {
         labels: labels.length ? labels : ['Tech', 'General', 'AI'],

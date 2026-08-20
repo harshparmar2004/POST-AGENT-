@@ -602,10 +602,17 @@ def get_queue_image(platform: str, article_id: str):
 
 @router.get("/images/{article_id}.png")
 def get_article_image(article_id: int):
-    """Serve article thumbnail image."""
+    """Serve article thumbnail image or a clean SVG placeholder card if not generated yet."""
     img_path = os.path.join(IMAGES_DIR, f"{article_id}.png")
     if not os.path.exists(img_path):
-        raise HTTPException(status_code=404, detail="Image not found")
+        from fastapi import Response
+        svg = f'''<svg xmlns="http://www.w3.org/2000/svg" width="400" height="220" viewBox="0 0 400 220">
+          <rect width="100%" height="100%" fill="#FAF7F2"/>
+          <rect x="15" y="15" width="370" height="190" rx="8" fill="none" stroke="#D97757" stroke-width="2" stroke-dasharray="6,6"/>
+          <text x="50%" y="42%" dominant-baseline="middle" text-anchor="middle" font-family="sans-serif" font-size="15" font-weight="bold" fill="#D97757">🎨 Nano Banana Studio</text>
+          <text x="50%" y="62%" dominant-baseline="middle" text-anchor="middle" font-family="sans-serif" font-size="12" fill="#6E6B65">Click "Run Pipeline" to generate</text>
+        </svg>'''
+        return Response(content=svg, media_type="image/svg+xml")
     return FileResponse(img_path, media_type="image/png")
 
 

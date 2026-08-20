@@ -139,7 +139,7 @@ const MediaPage = {
         <div class="glass-card queue-card" style="position: relative; display: flex; flex-direction: column; justify-content: space-between;">
           <div>
             <div class="queue-img-wrapper" style="height: 200px; position: relative;">
-              <img src="${a.image_url || '/api/placeholder/400/220'}" alt="${a.title}" onerror="this.src='/api/placeholder/400/220'" />
+              <img src="/api/images/${a.id}.png" alt="${a.title}" />
             </div>
 
             <div style="margin-top: 12px;">

@@ -1,5 +1,5 @@
 /**
- * Settings Page Renderer — Multi-LLM Support (Groq, OpenAI ChatGPT, Anthropic Claude, Google Gemini) + Social Media APIs
+ * Settings Page Renderer — Target Niche Focus + Multi-LLM Support + Social Media APIs
  */
 const SettingsPage = {
   async render(container) {
@@ -19,6 +19,24 @@ const SettingsPage = {
             <button class="btn btn-primary btn-glow" onclick="SettingsPage.saveSettings()">
               <i data-lucide="zap"></i> Activate & Save All Keys
             </button>
+          </div>
+        </div>
+
+        <!-- Target Niche Focus Box -->
+        <div class="glass-card" style="border: 1px solid var(--primary-purple);">
+          <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 12px;">
+            <div class="stat-icon" style="color: var(--primary-purple); background: rgba(217, 119, 87, 0.15); width: 38px; height: 38px; border-radius: 8px;">
+              <i data-lucide="target"></i>
+            </div>
+            <div>
+              <h3 style="font-family: var(--font-serif); font-size: 1.15rem;">🎯 Target Niche & AI Agent Focus</h3>
+              <p style="font-size: 0.82rem; color: var(--text-muted);">Tell your AI Agent what niche to filter and tailor news for (e.g. Tech, Politics, AI, Finance, Crypto, Health)</p>
+            </div>
+          </div>
+          <div style="display: flex; flex-direction: column; gap: 6px;">
+            <label style="font-size: 0.84rem; font-weight: 600;">NICHE_FOCUS</label>
+            <input type="text" id="input-NICHE_FOCUS" class="filter-select" placeholder="e.g. Artificial Intelligence, Tech News & Innovation" value="Artificial Intelligence, Tech News & Innovation" />
+            <span style="font-size: 0.76rem; color: var(--text-dim);">The LLM agent uses this topic prompt to select and format relevant news for your target audience.</span>
           </div>
         </div>
 
@@ -255,6 +273,7 @@ const SettingsPage = {
 
   async saveSettings() {
     const keys = [
+      "NICHE_FOCUS",
       "GOOGLE_API_KEY",
       "GROQ_API_KEY",
       "OPENAI_API_KEY",
@@ -288,7 +307,7 @@ const SettingsPage = {
         body: JSON.stringify(payload)
       });
 
-      App.showToast('All API Keys activated and saved to .env!', 'success');
+      App.showToast('Target Niche & API Keys activated and saved!', 'success');
       const msg = document.getElementById('save-status-msg');
       if (msg) {
         msg.textContent = "Saved & Activated!";

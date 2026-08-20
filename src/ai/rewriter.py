@@ -45,6 +45,8 @@ def rewrite_article(article_id: int) -> bool:
         elif google_key and not google_key.startswith("your_"): provider = "google"
         else: provider = "google"
 
+    niche = os.getenv("NICHE_FOCUS", "Technology, AI & Innovation")
+
     with get_session() as session:
         article = session.query(Article).filter(Article.id == article_id).first()
         if not article:
@@ -52,12 +54,13 @@ def rewrite_article(article_id: int) -> bool:
             return False
 
         prompt = (
+            f"Target Niche / Audience: {niche}\n"
             f"Title: {article.title}\n"
             f"Body: {article.body}\n\n"
-            "Please rewrite this news article for 4 social media platforms. Return strictly a JSON object with these keys:\n"
-            "- 'twitter_text': punchy tweet under 280 chars\n"
-            "- 'linkedin_text': professional post in 2 paragraphs\n"
-            "- 'instagram_caption': engaging caption with 5-10 hashtags\n"
+            f"Act as a professional AI curator for the '{niche}' niche. Please evaluate and rewrite this news article for 4 social media platforms. Return strictly a JSON object with these keys:\n"
+            "- 'twitter_text': punchy tweet under 280 chars tailored for this niche\n"
+            "- 'linkedin_text': professional post in 2 paragraphs tailored for this niche\n"
+            "- 'instagram_caption': engaging caption with 5-10 niche hashtags\n"
             "- 'reddit_title': informative title under 300 chars\n"
             "- 'reddit_body': 2 paragraph summary with discussion question\n"
         )

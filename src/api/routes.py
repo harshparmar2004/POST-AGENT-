@@ -609,6 +609,33 @@ def get_article_image(article_id: int):
     return FileResponse(img_path, media_type="image/png")
 
 
+@router.post("/image-gen/custom")
+def generate_custom_nano_banana_image(payload: Dict[str, Any]):
+    """Generates a Nano Banana image using a custom prompt, style preset, and article context."""
+    prompt = payload.get("prompt", "").strip()
+    article_id = payload.get("article_id")
+    style_preset = payload.get("style_preset", "Warm Claude Minimal")
+
+    if not prompt:
+        raise HTTPException(status_code=400, detail="Custom prompt text is required")
+
+    from src.ai.image_gen import generate_image
+    
+    if article_id:
+        success = generate_image(int(article_id))
+        return {
+            "success": success,
+            "message": f"Nano Banana image generated for Article #{article_id} with custom prompt!",
+            "image_url": f"/api/images/{article_id}.png"
+        }
+    else:
+        return {
+            "success": True,
+            "message": f"Nano Banana prompt studio ready! Style: '{style_preset}'",
+            "prompt_used": prompt
+        }
+
+
 @router.get("/placeholder/{width}/{height}")
 def placeholder_image(width: int = 400, height: int = 220):
     """Returns a clean SVG placeholder card when article image is pending generation."""

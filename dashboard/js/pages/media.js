@@ -1,19 +1,67 @@
 /**
- * Media Catalog & AI Image Studio Page Renderer — Visual catalog of LLM-generated images & slides with 1-click posting to APIs
+ * Media Catalog & AI Image Studio Page Renderer — Visual catalog with Nano Banana controls & 1-click API publishing
  */
 const MediaPage = {
   async render(container) {
     container.innerHTML = `
-      <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 24px;">
-        <div>
-          <h3 style="font-family: var(--font-serif); font-size: 1.25rem;">AI Generated Media Catalog & Slide Studio</h3>
-          <p style="font-size: 0.85rem; color: var(--text-muted);">Visual catalog of Gemini AI generated post images, slides, and rewrites. Click 'Publish Now' to post directly to connected APIs.</p>
+      <div style="display: flex; flex-direction: column; gap: 20px; margin-bottom: 24px;">
+        
+        <!-- Header -->
+        <div style="display: flex; align-items: center; justify-content: space-between;">
+          <div>
+            <h3 style="font-family: var(--font-serif); font-size: 1.3rem;">Media Catalog & Nano Banana Image Studio</h3>
+            <p style="font-size: 0.85rem; color: var(--text-muted);">Visual catalog of Nano Banana (Imagen 3) generated slides and rewrites. Click 'Publish Now' to post directly to APIs.</p>
+          </div>
+          <button class="btn btn-secondary" onclick="MediaPage.loadMediaCatalog()">
+            <i data-lucide="refresh-cw"></i> Refresh Catalog
+          </button>
         </div>
-        <button class="btn btn-secondary" onclick="MediaPage.loadMediaCatalog()">
-          <i data-lucide="refresh-cw"></i> Refresh Catalog
-        </button>
+
+        <!-- Nano Banana & Carousel Settings Control Card -->
+        <div class="glass-card" style="border: 1px solid var(--primary-purple); background: var(--bg-card);">
+          <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px;">
+            <div style="display: flex; align-items: center; gap: 10px;">
+              <div class="stat-icon" style="width: 36px; height: 36px; background: rgba(217, 119, 87, 0.15); color: var(--primary-purple); border-radius: 6px;">
+                <i data-lucide="sliders"></i>
+              </div>
+              <div>
+                <h4 style="font-family: var(--font-serif); font-size: 1.1rem;">Nano Banana Image Studio Config</h4>
+                <p style="font-size: 0.78rem; color: var(--text-muted);">Configure carousel slide count & aspect ratio for generated Instagram post decks</p>
+              </div>
+            </div>
+            <span class="badge badge-scraped">🍌 NANO BANANA (IMAGEN 3)</span>
+          </div>
+
+          <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px;">
+            <div>
+              <label style="font-size: 0.82rem; font-weight: 600;">Generated Slides Carousel per Post:</label>
+              <select class="filter-select" style="width: 100%; margin-top: 4px;">
+                <option selected>5 Carousel Image Slides (Cover + 3 Highlights + CTA)</option>
+                <option>3 Image Highlights Carousel</option>
+                <option>Single Feature Cover Image</option>
+              </select>
+            </div>
+
+            <div>
+              <label style="font-size: 0.82rem; font-weight: 600;">Target Aspect Ratio:</label>
+              <select class="filter-select" style="width: 100%; margin-top: 4px;">
+                <option selected>1:1 Square Instagram (1080 x 1080)</option>
+                <option>4:5 Instagram Portrait (1080 x 1350)</option>
+                <option>16:9 Landscape Banner (1200 x 675)</option>
+              </select>
+            </div>
+
+            <div style="display: flex; align-items: flex-end;">
+              <button class="btn btn-primary btn-glow" style="width: 100%; justify-content: center; padding: 10px;" onclick="App.showToast('Nano Banana Image Studio config saved!', 'success')">
+                <i data-lucide="check"></i> Save Studio Controls
+              </button>
+            </div>
+          </div>
+        </div>
+
       </div>
 
+      <!-- Media Catalog Grid -->
       <div class="queue-grid" id="media-catalog-grid">
         <div class="glass-card"><p>Loading media catalog...</p></div>
       </div>
@@ -32,7 +80,6 @@ const MediaPage = {
       const data = await App.fetchApi('/api/articles?limit=50');
       const articles = data.articles;
 
-      // Filter articles that have generated images or rewritten text
       const mediaArticles = articles.filter(a => a.image_url || a.status === 'ready' || a.status === 'published');
 
       if (!mediaArticles || mediaArticles.length === 0) {

@@ -1,176 +1,109 @@
 /**
- * Pipeline Flow & Agentic Node Workflow Renderer — Top-to-Bottom n8n Style Workflow Engine with Adjustable Node Settings
+ * Pipeline Flow & Agentic Node Workflow Renderer — Clean n8n style workflow visualizer & execution history
  */
 const PipelinePage = {
-  activeNode: 'node-1',
-
   async render(container) {
     container.innerHTML = `
+      <!-- Header -->
       <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px;">
         <div>
-          <h3 style="font-family: var(--font-serif); font-size: 1.35rem;">n8n Top-to-Bottom Agentic Node Canvas</h3>
-          <p style="font-size: 0.85rem; color: var(--text-muted);">Interactive workflow builder. Click on any node to view/adjust parameters and inspect data flow.</p>
+          <h3 style="font-family: var(--font-serif); font-size: 1.3rem;">Agentic Node Workflow (n8n Engine)</h3>
+          <p style="font-size: 0.85rem; color: var(--text-muted);">Real-time visual node flow tracking articles from RSS/Web ingest down to multi-API publishing.</p>
         </div>
         <div style="display: flex; gap: 12px;">
           <button class="btn btn-secondary" onclick="PipelinePage.loadPipelineData()">
-            <i data-lucide="refresh-cw"></i> Refresh Canvas
+            <i data-lucide="refresh-cw"></i> Refresh Workflow
           </button>
-          <button class="btn btn-primary btn-glow" onclick="App.triggerPipeline()">
-            <i data-lucide="play"></i> Execute Workflow
+          <button class="btn btn-primary btn-glow" id="run-pipeline-flow-btn" onclick="App.triggerPipeline()">
+            <i data-lucide="play"></i> Execute Agentic Pipeline
           </button>
         </div>
       </div>
 
-      <!-- 2-Column n8n Layout: Left Top-to-Bottom Canvas, Right Node Inspector Drawer -->
-      <div style="display: grid; grid-template-columns: 1.6fr 1fr; gap: 24px; margin-bottom: 28px;">
+      <!-- n8n Clean Node Workflow Diagram Card -->
+      <div class="glass-card" style="padding: 26px; margin-bottom: 28px; background: var(--bg-card); overflow-x: auto;">
         
-        <!-- Left Column: Top-to-Bottom n8n Node Workflow Canvas -->
-        <div class="glass-card" style="padding: 24px; display: flex; flex-direction: column; align-items: center; gap: 0; background: var(--bg-card);">
+        <div style="display: flex; align-items: center; justify-content: space-between; gap: 16px; min-width: 850px;">
           
-          <!-- Node 1: News Ingestion -->
-          <div class="n8n-node" id="n8n-node-1" onclick="PipelinePage.inspectNode('node-1')" style="width: 100%; background: var(--bg-surface); border: 2px solid var(--primary-purple); border-radius: 8px; padding: 16px; cursor: pointer; transition: all 0.2s ease;">
-            <div style="display: flex; align-items: center; justify-content: space-between;">
-              <div style="display: flex; align-items: center; gap: 12px;">
-                <div class="stat-icon" style="width: 36px; height: 36px; background: rgba(217, 119, 87, 0.15); color: var(--primary-purple); border-radius: 6px;">
-                  <i data-lucide="rss"></i>
-                </div>
-                <div>
-                  <h4 style="font-family: var(--font-serif); font-size: 1.05rem;">Node 1: News Sources Ingestion</h4>
-                  <p style="font-size: 0.78rem; color: var(--text-muted);">Tier 1 RSS Feeds + Tier 2 ScrapeGraphAI LLM Scraper</p>
-                </div>
-              </div>
-              <span class="badge badge-published" id="node-ingest-badge">18 SOURCES</span>
+          <!-- Node 1: Ingestion -->
+          <div style="flex: 1; background: var(--bg-surface); border: 1px solid var(--border-color); border-radius: 8px; padding: 18px; text-align: center; position: relative;">
+            <div style="width: 10px; height: 10px; border-radius: 50%; background: #2e7d32; position: absolute; top: 12px; right: 12px;"></div>
+            <div class="stat-icon" style="margin: 0 auto 10px; width: 44px; height: 44px; background: rgba(217, 119, 87, 0.15); color: var(--primary-purple);">
+              <i data-lucide="rss"></i>
             </div>
-            <div style="margin-top: 10px; padding-top: 10px; border-top: 1px solid var(--border-color); display: flex; justify-content: space-between; font-size: 0.8rem;">
-              <span style="color: var(--text-muted);">Extracted Status:</span>
-              <strong id="node-ingest-count" style="color: var(--primary-purple);">0 Scraped</strong>
-            </div>
+            <h4 style="font-family: var(--font-serif); font-size: 1rem; margin-bottom: 4px;">1. News Ingestion</h4>
+            <p style="font-size: 0.75rem; color: var(--text-muted);">18 Sources (RSS + ScrapeGraphAI)</p>
+            <div style="margin-top: 12px; font-weight: 700; font-size: 1.1rem; color: var(--primary-purple);" id="node-ingest-count">0 Scraped</div>
           </div>
 
-          <!-- Vertical Connector Line 1 -->
-          <div style="width: 2px; height: 28px; background: var(--primary-purple); margin: 0 auto; position: relative;">
-            <div style="width: 8px; height: 8px; border-radius: 50%; background: var(--primary-purple); position: absolute; top: 10px; left: -3px;"></div>
+          <!-- Connecting Arrow 1 -->
+          <div style="display: flex; align-items: center; justify-content: center; color: var(--primary-purple); font-size: 1.2rem;">
+            <i data-lucide="arrow-right"></i>
           </div>
 
-          <!-- Node 2: Deduplication DB -->
-          <div class="n8n-node" id="n8n-node-2" onclick="PipelinePage.inspectNode('node-2')" style="width: 100%; background: var(--bg-surface); border: 1px solid var(--border-color); border-radius: 8px; padding: 16px; cursor: pointer; transition: all 0.2s ease;">
-            <div style="display: flex; align-items: center; justify-content: space-between;">
-              <div style="display: flex; align-items: center; gap: 12px;">
-                <div class="stat-icon" style="width: 36px; height: 36px; background: rgba(43, 123, 185, 0.15); color: var(--color-twitter); border-radius: 6px;">
-                  <i data-lucide="database"></i>
-                </div>
-                <div>
-                  <h4 style="font-family: var(--font-serif); font-size: 1.05rem;">Node 2: SHA-256 Deduplication & DB</h4>
-                  <p style="font-size: 0.78rem; color: var(--text-muted);">SQLite Database Storage & Duplicate URL Hash Filter</p>
-                </div>
-              </div>
-              <span class="badge badge-ready">ACTIVE</span>
+          <!-- Node 2: Dedupe & Storage -->
+          <div style="flex: 1; background: var(--bg-surface); border: 1px solid var(--border-color); border-radius: 8px; padding: 18px; text-align: center; position: relative;">
+            <div style="width: 10px; height: 10px; border-radius: 50%; background: #2e7d32; position: absolute; top: 12px; right: 12px;"></div>
+            <div class="stat-icon" style="margin: 0 auto 10px; width: 44px; height: 44px; background: rgba(43, 123, 185, 0.15); color: var(--color-twitter);">
+              <i data-lucide="database"></i>
             </div>
-            <div style="margin-top: 10px; padding-top: 10px; border-top: 1px solid var(--border-color); display: flex; justify-content: space-between; font-size: 0.8rem;">
-              <span style="color: var(--text-muted);">Database Records:</span>
-              <strong id="node-db-count" style="color: var(--color-twitter);">0 Stored</strong>
-            </div>
+            <h4 style="font-family: var(--font-serif); font-size: 1rem; margin-bottom: 4px;">2. Deduplication DB</h4>
+            <p style="font-size: 0.75rem; color: var(--text-muted);">SHA-256 Hashing & SQLite</p>
+            <div style="margin-top: 12px; font-weight: 700; font-size: 1.1rem; color: var(--color-twitter);" id="node-db-count">0 Stored</div>
           </div>
 
-          <!-- Vertical Connector Line 2 -->
-          <div style="width: 2px; height: 28px; background: var(--primary-purple); margin: 0 auto; position: relative;">
-            <div style="width: 8px; height: 8px; border-radius: 50%; background: var(--primary-purple); position: absolute; top: 10px; left: -3px;"></div>
+          <!-- Connecting Arrow 2 -->
+          <div style="display: flex; align-items: center; justify-content: center; color: var(--primary-purple); font-size: 1.2rem;">
+            <i data-lucide="arrow-right"></i>
           </div>
 
           <!-- Node 3: Multi-LLM Rewrite Agent -->
-          <div class="n8n-node" id="n8n-node-3" onclick="PipelinePage.inspectNode('node-3')" style="width: 100%; background: var(--bg-surface); border: 1px solid var(--border-color); border-radius: 8px; padding: 16px; cursor: pointer; transition: all 0.2s ease;">
-            <div style="display: flex; align-items: center; justify-content: space-between;">
-              <div style="display: flex; align-items: center; gap: 12px;">
-                <div class="stat-icon" style="width: 36px; height: 36px; background: rgba(123, 31, 162, 0.15); color: #a855f7; border-radius: 6px;">
-                  <i data-lucide="sparkles"></i>
-                </div>
-                <div>
-                  <h4 style="font-family: var(--font-serif); font-size: 1.05rem;">Node 3: Multi-LLM Rewrite Agent</h4>
-                  <p style="font-size: 0.78rem; color: var(--text-muted);">Evaluates articles for Niche & generates 4 social formats</p>
-                </div>
-              </div>
-              <span class="badge badge-scraped">MULTI-LLM</span>
+          <div style="flex: 1; background: var(--bg-surface); border: 1px solid var(--border-color); border-radius: 8px; padding: 18px; text-align: center; position: relative;">
+            <div style="width: 10px; height: 10px; border-radius: 50%; background: #2e7d32; position: absolute; top: 12px; right: 12px;"></div>
+            <div class="stat-icon" style="margin: 0 auto 10px; width: 44px; height: 44px; background: rgba(123, 31, 162, 0.15); color: #a855f7;">
+              <i data-lucide="sparkles"></i>
             </div>
-            <div style="margin-top: 10px; padding-top: 10px; border-top: 1px solid var(--border-color); display: flex; justify-content: space-between; font-size: 0.8rem;">
-              <span style="color: var(--text-muted);">AI Content Status:</span>
-              <strong id="node-llm-count" style="color: #a855f7;">0 Ready</strong>
-            </div>
+            <h4 style="font-family: var(--font-serif); font-size: 1rem; margin-bottom: 4px;">3. LLM Rewriter</h4>
+            <p style="font-size: 0.75rem; color: var(--text-muted);">Gemini 2.5 (4 Formats)</p>
+            <div style="margin-top: 12px; font-weight: 700; font-size: 1.1rem; color: #a855f7;" id="node-llm-count">0 Ready</div>
           </div>
 
-          <!-- Vertical Connector Line 3 -->
-          <div style="width: 2px; height: 28px; background: var(--primary-purple); margin: 0 auto; position: relative;">
-            <div style="width: 8px; height: 8px; border-radius: 50%; background: var(--primary-purple); position: absolute; top: 10px; left: -3px;"></div>
+          <!-- Connecting Arrow 3 -->
+          <div style="display: flex; align-items: center; justify-content: center; color: var(--primary-purple); font-size: 1.2rem;">
+            <i data-lucide="arrow-right"></i>
           </div>
 
-          <!-- Node 4: 5-Slide Image Studio Engine -->
-          <div class="n8n-node" id="n8n-node-4" onclick="PipelinePage.inspectNode('node-4')" style="width: 100%; background: var(--bg-surface); border: 1px solid var(--border-color); border-radius: 8px; padding: 16px; cursor: pointer; transition: all 0.2s ease;">
-            <div style="display: flex; align-items: center; justify-content: space-between;">
-              <div style="display: flex; align-items: center; gap: 12px;">
-                <div class="stat-icon" style="width: 36px; height: 36px; background: rgba(193, 53, 132, 0.15); color: var(--color-instagram); border-radius: 6px;">
-                  <i data-lucide="image"></i>
-                </div>
-                <div>
-                  <h4 style="font-family: var(--font-serif); font-size: 1.05rem;">Node 4: 5-Slide Image Studio Generator</h4>
-                  <p style="font-size: 0.78rem; color: var(--text-muted);">Gemini 2.0 Flash / Pillow multi-slide visual carousel engine</p>
-                </div>
-              </div>
-              <span class="badge badge-ready">5 SLIDES/POST</span>
+          <!-- Node 4: Nano Banana Image Studio -->
+          <div style="flex: 1; background: var(--bg-surface); border: 1px solid var(--border-color); border-radius: 8px; padding: 18px; text-align: center; position: relative;">
+            <div style="width: 10px; height: 10px; border-radius: 50%; background: #2e7d32; position: absolute; top: 12px; right: 12px;"></div>
+            <div class="stat-icon" style="margin: 0 auto 10px; width: 44px; height: 44px; background: rgba(193, 53, 132, 0.15); color: var(--color-instagram);">
+              <i data-lucide="image"></i>
             </div>
-            <div style="margin-top: 10px; padding-top: 10px; border-top: 1px solid var(--border-color); display: flex; justify-content: space-between; font-size: 0.8rem;">
-              <span style="color: var(--text-muted);">Images & Slide Decks:</span>
-              <strong id="node-img-count" style="color: var(--color-instagram);">0 Images</strong>
-            </div>
+            <h4 style="font-family: var(--font-serif); font-size: 1rem; margin-bottom: 4px;">4. Image Studio</h4>
+            <p style="font-size: 0.75rem; color: var(--text-muted);">Nano Banana (Imagen 3)</p>
+            <div style="margin-top: 12px; font-weight: 700; font-size: 1.1rem; color: var(--color-instagram);" id="node-img-count">0 Images</div>
           </div>
 
-          <!-- Vertical Connector Line 4 -->
-          <div style="width: 2px; height: 28px; background: var(--primary-purple); margin: 0 auto; position: relative;">
-            <div style="width: 8px; height: 8px; border-radius: 50%; background: var(--primary-purple); position: absolute; top: 10px; left: -3px;"></div>
+          <!-- Connecting Arrow 4 -->
+          <div style="display: flex; align-items: center; justify-content: center; color: var(--primary-purple); font-size: 1.2rem;">
+            <i data-lucide="arrow-right"></i>
           </div>
 
           <!-- Node 5: Multi-API Publisher -->
-          <div class="n8n-node" id="n8n-node-5" onclick="PipelinePage.inspectNode('node-5')" style="width: 100%; background: var(--bg-surface); border: 1px solid var(--border-color); border-radius: 8px; padding: 16px; cursor: pointer; transition: all 0.2s ease;">
-            <div style="display: flex; align-items: center; justify-content: space-between;">
-              <div style="display: flex; align-items: center; gap: 12px;">
-                <div class="stat-icon" style="width: 36px; height: 36px; background: rgba(46, 125, 50, 0.15); color: #2e7d32; border-radius: 6px;">
-                  <i data-lucide="send"></i>
-                </div>
-                <div>
-                  <h4 style="font-family: var(--font-serif); font-size: 1.05rem;">Node 5: Multi-API Social Publisher</h4>
-                  <p style="font-size: 0.78rem; color: var(--text-muted);">Reddit, Twitter/X, Instagram Graph API, LinkedIn API</p>
-                </div>
-              </div>
-              <span class="badge badge-published">4 APIS CONNECTED</span>
+          <div style="flex: 1; background: var(--bg-surface); border: 1px solid var(--border-color); border-radius: 8px; padding: 18px; text-align: center; position: relative;">
+            <div style="width: 10px; height: 10px; border-radius: 50%; background: #2e7d32; position: absolute; top: 12px; right: 12px;"></div>
+            <div class="stat-icon" style="margin: 0 auto 10px; width: 44px; height: 44px; background: rgba(46, 125, 50, 0.15); color: #2e7d32;">
+              <i data-lucide="send"></i>
             </div>
-            <div style="margin-top: 10px; padding-top: 10px; border-top: 1px solid var(--border-color); display: flex; justify-content: space-between; font-size: 0.8rem;">
-              <span style="color: var(--text-muted);">Published Status:</span>
-              <strong id="node-pub-count" style="color: #2e7d32;">0 Published</strong>
-            </div>
+            <h4 style="font-family: var(--font-serif); font-size: 1rem; margin-bottom: 4px;">5. Multi-API Post</h4>
+            <p style="font-size: 0.75rem; color: var(--text-muted);">Reddit, X, Insta, LinkedIn</p>
+            <div style="margin-top: 12px; font-weight: 700; font-size: 1.1rem; color: #2e7d32;" id="node-pub-count">0 Published</div>
           </div>
 
         </div>
-
-        <!-- Right Column: n8n Node Configuration & Parameter Inspector Drawer -->
-        <div class="glass-card" id="n8n-node-inspector" style="padding: 24px; background: var(--bg-card); display: flex; flex-direction: column; justify-content: space-between;">
-          <div>
-            <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px; border-bottom: 1px solid var(--border-color); padding-bottom: 12px;">
-              <h3 style="font-family: var(--font-serif); font-size: 1.15rem;" id="inspector-title">Node Parameters</h3>
-              <span class="badge badge-scraped" id="inspector-badge">n8n Config</span>
-            </div>
-            <div id="inspector-content">
-              <p style="font-size: 0.85rem; color: var(--text-muted);">Select any node on the left canvas to adjust its execution parameters!</p>
-            </div>
-          </div>
-
-          <div style="margin-top: 20px; padding-top: 16px; border-top: 1px solid var(--border-color);">
-            <button class="btn btn-primary btn-glow" style="width: 100%; justify-content: center;" onclick="App.showToast('Node parameters updated!', 'success')">
-              Save Node Config
-            </button>
-          </div>
-        </div>
-
       </div>
 
-      <!-- Execution History & Batch Log Archive -->
+      <!-- Execution Runs History Table -->
       <div class="glass-card table-card">
         <div class="table-header-tools">
           <h3 style="font-size: 1.15rem; font-weight: 600; font-family: var(--font-serif);">Pipeline Execution History & Saved Logs</h3>
@@ -201,120 +134,6 @@ const PipelinePage = {
     if (window.lucide) window.lucide.createIcons();
 
     await this.loadPipelineData();
-    this.inspectNode('node-4'); // Default inspect Image Studio Node
-  },
-
-  inspectNode(nodeId) {
-    this.activeNode = nodeId;
-
-    // Highlight active node on canvas
-    document.querySelectorAll('.n8n-node').forEach(el => {
-      el.style.borderColor = 'var(--border-color)';
-    });
-    const activeEl = document.getElementById(`n8n-${nodeId}`);
-    if (activeEl) activeEl.style.borderColor = 'var(--primary-purple)';
-
-    const content = document.getElementById('inspector-content');
-    const title = document.getElementById('inspector-title');
-    const badge = document.getElementById('inspector-badge');
-
-    if (nodeId === 'node-1') {
-      title.textContent = 'Node 1: Ingestion Config';
-      badge.textContent = 'SCRAPER ENGINE';
-      content.innerHTML = `
-        <div style="display: flex; flex-direction: column; gap: 12px; font-size: 0.85rem;">
-          <p><strong>Primary Tool:</strong> <code>feedparser</code> + <code>ScrapeGraphAI</code> (Gemini 2.5)</p>
-          <div>
-            <label style="font-weight: 600;">Max Articles per Source:</label>
-            <input type="number" class="filter-select" value="5" style="width: 100%; margin-top: 4px;" />
-          </div>
-          <div>
-            <label style="font-weight: 600;">Scrape Delay (seconds):</label>
-            <input type="number" class="filter-select" value="2" style="width: 100%; margin-top: 4px;" />
-          </div>
-          <div>
-            <label style="font-weight: 600;">Robots.txt Strict Compliance:</label>
-            <select class="filter-select" style="width: 100%; margin-top: 4px;">
-              <option selected>Enabled (Strict Ethical Check)</option>
-              <option>Permissive Mode</option>
-            </select>
-          </div>
-        </div>
-      `;
-    } else if (nodeId === 'node-2') {
-      title.textContent = 'Node 2: DB & Dedupe Config';
-      badge.textContent = 'STORAGE ENGINE';
-      content.innerHTML = `
-        <div style="display: flex; flex-direction: column; gap: 12px; font-size: 0.85rem;">
-          <p><strong>Database:</strong> SQLite3 (<code>pipeline.db</code> via SQLAlchemy ORM)</p>
-          <p><strong>Hashing Algorithm:</strong> SHA-256 on Article Canonical URLs</p>
-          <div>
-            <label style="font-weight: 600;">Retention Policy:</label>
-            <select class="filter-select" style="width: 100%; margin-top: 4px;">
-              <option selected>Keep All Scraped History (Unlimited)</option>
-              <option>30 Days Auto Cleanup</option>
-            </select>
-          </div>
-        </div>
-      `;
-    } else if (nodeId === 'node-3') {
-      title.textContent = 'Node 3: Multi-LLM Rewrite Config';
-      badge.textContent = 'AI AGENT REWRITER';
-      content.innerHTML = `
-        <div style="display: flex; flex-direction: column; gap: 12px; font-size: 0.85rem;">
-          <p><strong>Active LLM Provider:</strong> Auto-Detected (Groq / OpenAI / Claude / Gemini)</p>
-          <div>
-            <label style="font-weight: 600;">Target Niche Focus Prompt:</label>
-            <input type="text" class="filter-select" value="Artificial Intelligence, Tech & Business" style="width: 100%; margin-top: 4px;" />
-          </div>
-          <div>
-            <label style="font-weight: 600;">Output Social Formats:</label>
-            <p style="color: var(--text-muted); font-size: 0.78rem; margin-top: 2px;">Twitter (Tweet), Reddit (Post), Instagram (Caption), LinkedIn (Article)</p>
-          </div>
-        </div>
-      `;
-    } else if (nodeId === 'node-4') {
-      title.textContent = 'Node 4: 5-Slide Image Studio Engine';
-      badge.textContent = 'IMAGE GENERATION';
-      content.innerHTML = `
-        <div style="display: flex; flex-direction: column; gap: 12px; font-size: 0.85rem;">
-          <p><strong>Primary Tool:</strong> <code>Gemini 2.0 Flash</code> / PIL Graphics Renderer</p>
-          <div>
-            <label style="font-weight: 600;">Generated Slides Carousel per Post:</label>
-            <select class="filter-select" style="width: 100%; margin-top: 4px;">
-              <option selected>5 Carousel Image Slides (Cover + 3 Highlights + CTA)</option>
-              <option>Single Feature Cover Image</option>
-              <option>3 Image Highlights Carousel</option>
-            </select>
-          </div>
-          <div>
-            <label style="font-weight: 600;">Aspect Ratio:</label>
-            <select class="filter-select" style="width: 100%; margin-top: 4px;">
-              <option selected>1:1 Square Instagram (1080 x 1080)</option>
-              <option>4:5 Instagram Portrait (1080 x 1350)</option>
-              <option>16:9 Landscape Banner (1200 x 675)</option>
-            </select>
-          </div>
-        </div>
-      `;
-    } else if (nodeId === 'node-5') {
-      title.textContent = 'Node 5: Multi-API Publisher Config';
-      badge.textContent = 'API BROADCASTER';
-      content.innerHTML = `
-        <div style="display: flex; flex-direction: column; gap: 12px; font-size: 0.85rem;">
-          <p><strong>Connected API Networks:</strong> Reddit (PRAW), Twitter (Tweepy), Instagram Graph API, LinkedIn REST API</p>
-          <div>
-            <label style="font-weight: 600;">Broadcasting Mode:</label>
-            <select class="filter-select" style="width: 100%; margin-top: 4px;">
-              <option selected>Direct Live API Publishing to All 4 Platforms</option>
-              <option>Save to Local Queue First</option>
-            </select>
-          </div>
-        </div>
-      `;
-    }
-
-    if (window.lucide) window.lucide.createIcons();
   },
 
   async loadPipelineData() {
@@ -335,7 +154,7 @@ const PipelinePage = {
 
       const runs = historyData.history;
       if (!runs || runs.length === 0) {
-        tbody.innerHTML = '<tr><td colspan="8">No execution history recorded yet. Click "Execute Workflow" above!</td></tr>';
+        tbody.innerHTML = '<tr><td colspan="8">No execution history recorded yet. Click "Execute Agentic Pipeline" above!</td></tr>';
         return;
       }
 

@@ -24,12 +24,8 @@ def queue_for_instagram(article_id: int) -> bool:
     with get_session() as session:
         article = session.query(Article).filter(Article.id == article_id).first()
         
-        if not article:
-            logger.warning(f"Article {article_id} not found.")
-            return False
-            
-        if article.status != 'ready':
-            logger.info(f"Article {article_id} is not ready (status: {article.status}).")
+        if not article or not article.title:
+            logger.warning(f"Article {article_id} invalid or not found.")
             return False
             
         if article.instagram_queued:
@@ -106,7 +102,6 @@ def queue_all_for_instagram() -> int:
     queued_count = 0
     with get_session() as session:
         articles = session.query(Article).filter(
-            Article.status == 'ready', 
             Article.instagram_queued == False
         ).all()
         article_ids = [a.id for a in articles]

@@ -461,7 +461,8 @@ def update_source(source_index: int, source_data: Dict[str, Any]):
     return {"success": True, "message": f"Source '{name}' updated successfully!", "source": sources[source_index]}
 
 
-@router.api_route("/sources/{source_index}", methods=["DELETE"])
+@router.api_route("/sources/{source_index}", methods=["DELETE", "POST", "GET"])
+@router.api_route("/sources/{source_index}/delete", methods=["DELETE", "POST", "GET"])
 def delete_source(source_index: int):
     """Delete a source from sources.yaml by index."""
     config_file = os.path.join(PROJECT_ROOT, "config", "sources.yaml")

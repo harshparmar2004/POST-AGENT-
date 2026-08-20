@@ -190,11 +190,17 @@ const SourcesPage = {
     if (!confirm(`Are you sure you want to delete source '${name}'?`)) return;
 
     try {
-      const res = await App.fetchApi(`/api/sources/${index}`, { method: 'DELETE' });
+      const res = await App.fetchApi(`/api/sources/${index}/delete`, { method: 'POST' });
       App.showToast(res.message, 'info');
       this.loadSources();
     } catch (err) {
-      App.showToast(`Failed to delete source: ${err.message}`, 'error');
+      try {
+        const res = await App.fetchApi(`/api/sources/${index}`, { method: 'DELETE' });
+        App.showToast(res.message, 'info');
+        this.loadSources();
+      } catch (e2) {
+        App.showToast(`Failed to delete source: ${err.message}`, 'error');
+      }
     }
   }
 };

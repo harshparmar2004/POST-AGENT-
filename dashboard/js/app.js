@@ -47,7 +47,7 @@ const App = {
   },
 
   navigateTo(page, updateHash = true) {
-    if (!['dashboard', 'articles', 'sources', 'queue', 'logs'].includes(page)) {
+    if (!['dashboard', 'articles', 'sources', 'queue', 'logs', 'settings'].includes(page)) {
       page = 'dashboard';
     }
 
@@ -67,7 +67,8 @@ const App = {
       articles: { title: 'Articles Browser', subtitle: 'Manage scraped articles, AI rewrites, and platform status' },
       sources: { title: 'News Sources', subtitle: 'Configured RSS feeds and ScrapeGraphAI web sources' },
       queue: { title: 'Local Queue Viewer', subtitle: 'Prepared content for Instagram and LinkedIn manual posting' },
-      logs: { title: 'System Execution Logs', subtitle: 'Live terminal stream from pipeline.log' }
+      logs: { title: 'System Execution Logs', subtitle: 'Live terminal stream from pipeline.log' },
+      settings: { title: 'API Keys & Configuration', subtitle: 'Manage Gemini, Reddit, and Twitter API credentials directly from UI' }
     };
 
     const header = pageTitles[page] || pageTitles.dashboard;
@@ -88,6 +89,8 @@ const App = {
       QueuePage.render(container);
     } else if (page === 'logs' && typeof LogsPage !== 'undefined') {
       LogsPage.render(container);
+    } else if (page === 'settings' && typeof SettingsPage !== 'undefined') {
+      SettingsPage.render(container);
     }
 
     // Re-initialize Lucide icons

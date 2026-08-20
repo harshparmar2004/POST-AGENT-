@@ -403,3 +403,80 @@ def trigger_pipeline(max_articles: Optional[int] = Query(None, description="Max 
 def get_pipeline_status():
     """Returns current execution status of the pipeline."""
     return _pipeline_state
+
+
+# ---------------------------------------------------------------------------
+# Settings & API Keys Management
+# ---------------------------------------------------------------------------
+
+ENV_KEYS = [
+    "GOOGLE_API_KEY",
+    "REDDIT_CLIENT_ID",
+    "REDDIT_CLIENT_SECRET",
+    "REDDIT_USERNAME",
+    "REDDIT_PASSWORD",
+    "TWITTER_API_KEY",
+    "TWITTER_API_SECRET",
+    "TWITTER_ACCESS_TOKEN",
+    "TWITTER_ACCESS_SECRET",
+]
+
+def _mask_val(val: Optional[str]) -> str:
+    if not val:
+        return ""
+    if len(val) <= 8:
+        return "*******"
+    return val[:4] + "..." + val[-4:]
+
+
+@router.get("/settings")
+def get_settings():
+    """Returns current environment key presence and masked key values."""
+    env_file = os.path.join(PROJECT_ROOT, ".env")
+    has_file = os.path.exists(env_file)
+    
+    keys_data = {}
+    for k in ENV_KEYS:
+        val = os.getenv(k, "")
+        keys_data[k] = {
+            "set": bool(val and not val.startswith("your_")),
+            "masked": _mask_val(val) if val and not val.startswith("your_") else "",
+            "raw": val if val and not val.startswith("your_") else ""
+        }
+        
+    return {
+        "env_file_exists": has_file,
+        "keys": keys_data
+    }
+
+
+@router.post("/settings")
+def update_settings(settings: Dict[str, str]):
+    """Update API keys in .env file and live os.environ."""
+    env_path = os.path.join(PROJECT_ROOT, ".env")
+    
+    existing = {}
+    if os.path.exists(env_path):
+        with open(env_path, "r", encoding="utf-8") as f:
+            for line in f:
+                line = line.strip()
+                if line and not line.startswith("#") and "=" in line:
+                    k, v = line.split("=", 1)
+                    existing[k.strip()] = v.strip()
+
+    # Update with new values provided
+    for k in ENV_KEYS:
+        if k in settings:
+            new_val = settings[k].strip()
+            if new_val and not new_val.startswith("****"):
+                existing[k] = new_val
+                os.environ[k] = new_val
+
+    # Write updated .env
+    with open(env_path, "w", encoding="utf-8") as f:
+        f.write("# News Auto-Pipeline Environment Keys (Saved via Web Dashboard)\n")
+        for k, v in existing.items():
+            f.write(f"{k}={v}\n")
+
+    return {"success": True, "message": ".env settings updated successfully!"}
+

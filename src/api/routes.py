@@ -569,13 +569,10 @@ def trigger_pipeline(background_tasks: BackgroundTasks, max_articles: Optional[i
     }
 
 
-@router.post("/pipeline/stop")
+@router.api_route("/pipeline/stop", methods=["GET", "POST"])
 def stop_pipeline():
     """Aborts the currently running pipeline to save API credits."""
     global _pipeline_state
-    if not _pipeline_state["is_running"]:
-        return JSONResponse(status_code=400, content={"message": "Pipeline is not currently running!"})
-
     from src.orchestrator import request_abort
     request_abort()
     _pipeline_state["is_running"] = False

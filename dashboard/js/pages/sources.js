@@ -37,34 +37,36 @@ const SourcesPage = {
       }
 
       grid.innerHTML = this.sourcesData.map((s, idx) => `
-        <div class="glass-card source-card">
-          <div class="source-header">
-            <h3>${s.name}</h3>
-            <span class="tier-tag tier-${s.tier}">TIER ${s.tier}</span>
-          </div>
+        <div class="glass-card source-card" style="display: flex; flex-direction: column; justify-content: space-between;">
+          <div>
+            <div class="source-header">
+              <h3>${s.name}</h3>
+              <span class="tier-tag tier-${s.tier}">TIER ${s.tier}</span>
+            </div>
 
-          <div class="source-meta">
-            <div><i data-lucide="folder" style="width: 14px; display: inline;"></i> Category: <strong>${s.category || 'general'}</strong></div>
-            <div><i data-lucide="message-square" style="width: 14px; display: inline;"></i> Subreddit: <strong>r/${s.subreddit || 'technology'}</strong></div>
-            <div><i data-lucide="clock" style="width: 14px; display: inline;"></i> Delay: <strong>${s.delay_seconds}s</strong></div>
-            <div style="margin-top: 4px; font-size: 0.78rem; color: var(--text-dim); overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
-              ${s.feed_url || s.url}
+            <div class="source-meta">
+              <div><i data-lucide="folder" style="width: 14px; display: inline;"></i> Category: <strong>${s.category || 'general'}</strong></div>
+              <div><i data-lucide="message-square" style="width: 14px; display: inline;"></i> Subreddit: <strong>r/${s.subreddit || 'technology'}</strong></div>
+              <div><i data-lucide="clock" style="width: 14px; display: inline;"></i> Delay: <strong>${s.delay_seconds}s</strong></div>
+              <div style="margin-top: 4px; font-size: 0.78rem; color: var(--text-dim); overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
+                ${s.feed_url || s.url}
+              </div>
+
+              <!-- Articles Scraped Metric Placed On Top -->
+              <div style="margin-top: 10px; font-size: 0.85rem; color: var(--text-muted);">
+                Articles scraped: <strong style="font-size: 1.1rem; color: var(--primary-purple);">${s.article_count}</strong>
+              </div>
             </div>
           </div>
 
-          <div style="padding-top: 12px; border-top: 1px solid var(--border-color); display: flex; align-items: center; justify-content: space-between;">
-            <div style="font-size: 0.85rem; color: var(--text-muted);">
-              Articles scraped: <strong style="font-size: 1.1rem; color: var(--primary-purple);">${s.article_count}</strong>
-            </div>
-
-            <div style="display: flex; gap: 6px;">
-              <button class="btn btn-secondary" style="padding: 4px 8px; font-size: 0.75rem;" onclick="SourcesPage.openEditModal(${idx})" title="Edit Source">
-                <i data-lucide="edit-2" style="width: 12px;"></i> Edit
-              </button>
-              <button class="btn btn-secondary" style="padding: 4px 8px; font-size: 0.75rem; color: var(--status-failed);" onclick="SourcesPage.deleteSource(${idx}, '${s.name}')" title="Delete Source">
-                <i data-lucide="trash-2" style="width: 12px;"></i> Delete
-              </button>
-            </div>
+          <!-- Bottom Action Buttons -->
+          <div style="margin-top: 14px; padding-top: 10px; border-top: 1px solid var(--border-color); display: flex; align-items: center; justify-content: flex-end; gap: 8px;">
+            <button class="btn btn-secondary" style="padding: 5px 12px; font-size: 0.78rem;" onclick="SourcesPage.openEditModal(${idx})" title="Edit Source">
+              <i data-lucide="edit-2" style="width: 13px;"></i> Edit
+            </button>
+            <button class="btn btn-secondary" style="padding: 5px 12px; font-size: 0.78rem; color: var(--status-failed);" onclick="SourcesPage.deleteSource(${idx}, '${s.name}')" title="Delete Source">
+              <i data-lucide="trash-2" style="width: 13px;"></i> Delete
+            </button>
           </div>
         </div>
       `).join('');

@@ -590,6 +590,10 @@ def get_pipeline_history(limit: int = 50):
 
 ENV_KEYS = [
     "GOOGLE_API_KEY",
+    "GROQ_API_KEY",
+    "OPENAI_API_KEY",
+    "ANTHROPIC_API_KEY",
+    "LLM_PROVIDER",
     "REDDIT_CLIENT_ID",
     "REDDIT_CLIENT_SECRET",
     "REDDIT_USERNAME",

@@ -1,5 +1,5 @@
 /**
- * Settings Page Renderer — Simplified, Step-by-Step Centered Layout for API Credentials
+ * Settings Page Renderer — Multi-LLM Support (Groq, OpenAI ChatGPT, Anthropic Claude, Google Gemini) + Social Media APIs
  */
 const SettingsPage = {
   async render(container) {
@@ -9,9 +9,9 @@ const SettingsPage = {
         <!-- Header Banner -->
         <div style="display: flex; align-items: center; justify-content: space-between; background: var(--bg-card); padding: 20px 24px; border-radius: 10px; border: 1px solid var(--border-color);">
           <div>
-            <h3 style="font-family: var(--font-serif); font-size: 1.3rem;">API Credentials Setup</h3>
+            <h3 style="font-family: var(--font-serif); font-size: 1.3rem;">API Credentials & Multi-LLM Setup</h3>
             <p style="font-size: 0.84rem; color: var(--text-muted); margin-top: 2px;">
-              Configure your AI key and social media accounts step by step.
+              Connect your choice of LLM provider (Groq, OpenAI, Claude, or Gemini) + social media accounts.
             </p>
           </div>
           <div style="display: flex; align-items: center; gap: 16px;">
@@ -22,30 +22,71 @@ const SettingsPage = {
           </div>
         </div>
 
-        <!-- Step 1: Google Gemini AI (Required) -->
-        <div class="glass-card" style="position: relative;">
+        <!-- Step 1: Multi-LLM Provider Selection (Groq, OpenAI, Claude, Gemini) -->
+        <div class="glass-card">
           <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px;">
             <div style="display: flex; align-items: center; gap: 12px;">
-              <div class="stat-icon" style="color: var(--primary-purple); background: rgba(217, 119, 87, 0.12); width: 40px; height: 40px; border-radius: 8px;">
-                <i data-lucide="sparkles"></i>
+              <div class="stat-icon" style="color: var(--primary-purple); background: rgba(217, 119, 87, 0.15); width: 40px; height: 40px; border-radius: 8px;">
+                <i data-lucide="cpu"></i>
               </div>
               <div>
-                <h3 style="font-family: var(--font-serif); font-size: 1.15rem;">1. Google Gemini AI (Required)</h3>
-                <p style="font-size: 0.82rem; color: var(--text-muted);">Powers article rewriting & thumbnail image generation</p>
+                <h3 style="font-family: var(--font-serif); font-size: 1.15rem;">1. Choose LLM Provider (Any LLM API Key)</h3>
+                <p style="font-size: 0.82rem; color: var(--text-muted);">Powers article rewriting & content generation. Use Groq, OpenAI, Claude, or Gemini!</p>
               </div>
             </div>
-            <span class="badge badge-scraped" style="font-size: 0.7rem;">REQUIRED</span>
+            <span class="badge badge-scraped" style="font-size: 0.7rem;">REQUIRED (PICK ANY 1)</span>
           </div>
 
-          <div style="display: flex; flex-direction: column; gap: 6px;">
-            <label style="font-size: 0.84rem; font-weight: 600;">GOOGLE_API_KEY</label>
-            <div style="display: flex; gap: 10px;">
-              <input type="password" id="input-GOOGLE_API_KEY" class="filter-select" style="flex: 1;" placeholder="Enter Gemini API key (AIzaSy...)" />
-              <button class="btn btn-secondary" onclick="SettingsPage.toggleVisibility('input-GOOGLE_API_KEY')">Show/Hide</button>
+          <div style="display: flex; flex-direction: column; gap: 16px;">
+            
+            <!-- Groq API Key -->
+            <div style="display: flex; flex-direction: column; gap: 4px; background: var(--bg-surface); padding: 14px; border-radius: 8px; border: 1px solid var(--border-color);">
+              <div style="display: flex; justify-content: space-between; align-items: center;">
+                <label style="font-size: 0.84rem; font-weight: 700; color: var(--primary-purple);">⚡ Groq API Key (Llama 3.3 70B — Fast & Free)</label>
+                <span style="font-size: 0.76rem; color: var(--text-dim);">Get key: <a href="https://console.groq.com/keys" target="_blank" style="color: var(--primary-purple); font-weight: 600;">console.groq.com/keys</a></span>
+              </div>
+              <div style="display: flex; gap: 10px; margin-top: 4px;">
+                <input type="password" id="input-GROQ_API_KEY" class="filter-select" style="flex: 1; background: var(--bg-card);" placeholder="Enter Groq key (gsk_...)" />
+                <button class="btn btn-secondary" onclick="SettingsPage.toggleVisibility('input-GROQ_API_KEY')">Show/Hide</button>
+              </div>
             </div>
-            <span style="font-size: 0.78rem; color: var(--text-dim); margin-top: 2px;">
-              Get your free key at: <a href="https://aistudio.google.com/apikey" target="_blank" style="color: var(--primary-purple); font-weight: 600;">aistudio.google.com/apikey</a>
-            </span>
+
+            <!-- OpenAI API Key -->
+            <div style="display: flex; flex-direction: column; gap: 4px; background: var(--bg-surface); padding: 14px; border-radius: 8px; border: 1px solid var(--border-color);">
+              <div style="display: flex; justify-content: space-between; align-items: center;">
+                <label style="font-size: 0.84rem; font-weight: 700; color: #2b7bb9;">🟢 OpenAI ChatGPT API Key (GPT-4o / GPT-4o mini)</label>
+                <span style="font-size: 0.76rem; color: var(--text-dim);">Get key: <a href="https://platform.openai.com/api-keys" target="_blank" style="color: #2b7bb9; font-weight: 600;">platform.openai.com/api-keys</a></span>
+              </div>
+              <div style="display: flex; gap: 10px; margin-top: 4px;">
+                <input type="password" id="input-OPENAI_API_KEY" class="filter-select" style="flex: 1; background: var(--bg-card);" placeholder="Enter OpenAI key (sk-proj-...)" />
+                <button class="btn btn-secondary" onclick="SettingsPage.toggleVisibility('input-OPENAI_API_KEY')">Show/Hide</button>
+              </div>
+            </div>
+
+            <!-- Anthropic Claude API Key -->
+            <div style="display: flex; flex-direction: column; gap: 4px; background: var(--bg-surface); padding: 14px; border-radius: 8px; border: 1px solid var(--border-color);">
+              <div style="display: flex; justify-content: space-between; align-items: center;">
+                <label style="font-size: 0.84rem; font-weight: 700; color: #d97757;">🧡 Anthropic Claude API Key (Claude 3.5 Sonnet)</label>
+                <span style="font-size: 0.76rem; color: var(--text-dim);">Get key: <a href="https://console.anthropic.com/settings/keys" target="_blank" style="color: #d97757; font-weight: 600;">console.anthropic.com/settings/keys</a></span>
+              </div>
+              <div style="display: flex; gap: 10px; margin-top: 4px;">
+                <input type="password" id="input-ANTHROPIC_API_KEY" class="filter-select" style="flex: 1; background: var(--bg-card);" placeholder="Enter Anthropic key (sk-ant-api...)" />
+                <button class="btn btn-secondary" onclick="SettingsPage.toggleVisibility('input-ANTHROPIC_API_KEY')">Show/Hide</button>
+              </div>
+            </div>
+
+            <!-- Google Gemini API Key -->
+            <div style="display: flex; flex-direction: column; gap: 4px; background: var(--bg-surface); padding: 14px; border-radius: 8px; border: 1px solid var(--border-color);">
+              <div style="display: flex; justify-content: space-between; align-items: center;">
+                <label style="font-size: 0.84rem; font-weight: 700; color: #a855f7;">✨ Google Gemini API Key (Gemini 2.5 Flash)</label>
+                <span style="font-size: 0.76rem; color: var(--text-dim);">Get key: <a href="https://aistudio.google.com/apikey" target="_blank" style="color: #a855f7; font-weight: 600;">aistudio.google.com/apikey</a></span>
+              </div>
+              <div style="display: flex; gap: 10px; margin-top: 4px;">
+                <input type="password" id="input-GOOGLE_API_KEY" class="filter-select" style="flex: 1; background: var(--bg-card);" placeholder="Enter Gemini key (AIzaSy...)" />
+                <button class="btn btn-secondary" onclick="SettingsPage.toggleVisibility('input-GOOGLE_API_KEY')">Show/Hide</button>
+              </div>
+            </div>
+
           </div>
         </div>
 
@@ -215,6 +256,9 @@ const SettingsPage = {
   async saveSettings() {
     const keys = [
       "GOOGLE_API_KEY",
+      "GROQ_API_KEY",
+      "OPENAI_API_KEY",
+      "ANTHROPIC_API_KEY",
       "INSTAGRAM_ACCESS_TOKEN",
       "INSTAGRAM_ACCOUNT_ID",
       "TWITTER_API_KEY",

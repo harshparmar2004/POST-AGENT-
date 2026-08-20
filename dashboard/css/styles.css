@@ -589,59 +589,49 @@ body.dark-theme {
 }
 
 /* ------------------------------------------------------------
-   Ultra-Minimalist Source Cards (Clean, Notion/Linear Style)
+   Sources Grid — Original Boxed Card Layout
    ------------------------------------------------------------ */
 .sources-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
-  gap: 12px;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 18px;
 }
 
-.source-card-minimal {
-  background: var(--bg-card);
-  border: 1px solid var(--border-color);
-  border-radius: 8px;
-  padding: 12px 14px;
+.source-card {
   display: flex;
   flex-direction: column;
   justify-content: space-between;
-  transition: all 0.15s ease;
+  gap: 14px;
 }
 
-.source-card-minimal:hover {
-  border-color: var(--primary-purple);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.04);
-}
-
-.btn-clean-action {
-  width: 26px;
-  height: 26px;
-  border-radius: 6px;
-  border: 1px solid transparent;
-  background: transparent;
-  color: var(--text-muted);
-  display: inline-flex;
+.source-header {
+  display: flex;
   align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  transition: all 0.12s ease;
+  justify-content: space-between;
 }
 
-.btn-clean-action i {
-  width: 13px;
-  height: 13px;
+.source-header h3 {
+  font-family: var(--font-serif);
+  font-size: 1.1rem;
+  font-weight: 600;
 }
 
-.btn-clean-action:hover {
-  background: var(--bg-surface);
-  color: var(--text-main);
-  border-color: var(--border-color);
+.tier-tag {
+  font-size: 0.7rem;
+  font-weight: 700;
+  padding: 3px 8px;
+  border-radius: 4px;
 }
 
-.btn-clean-action.danger:hover {
-  background: rgba(198, 40, 40, 0.1);
-  color: #c62828;
-  border-color: rgba(198, 40, 40, 0.2);
+.tier-tag.tier-1 { background: rgba(46, 125, 50, 0.12); color: #2e7d32; }
+.tier-tag.tier-2 { background: rgba(217, 119, 87, 0.15); color: var(--primary-purple); }
+
+.source-meta {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  font-size: 0.84rem;
+  color: var(--text-muted);
 }
 
 /* ------------------------------------------------------------

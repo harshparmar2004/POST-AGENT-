@@ -1,0 +1,180 @@
+# ============================================================
+# News Auto-Pipeline — Source Configuration
+# ============================================================
+# Each source has:
+#   name:          Display name (used in logs and DB)
+#   url:           Homepage URL
+#   feed_url:      RSS/Atom feed URL (null if none — triggers Tier 2)
+#   tier:          1 = RSS+trafilatura (fast, free)  |  2 = ScrapeGraphAI (slow, uses Gemini quota)
+#   category:      Content category for image generation context
+#   subreddit:     Target subreddit for Reddit posting
+#   delay_seconds: Pause between requests to this source (robots.txt courtesy)
+#   max_articles:  Max articles to pull per run from this source
+# ============================================================
+
+sources:
+  # --- Tier 1: RSS + trafilatura (fast, free) ---
+
+  - name: "TechCrunch"
+    url: "https://techcrunch.com"
+    feed_url: "https://techcrunch.com/feed/"
+    tier: 1
+    category: "tech"
+    subreddit: "technology"
+    delay_seconds: 2
+    max_articles: 5
+
+  - name: "The Verge"
+    url: "https://www.theverge.com"
+    feed_url: "https://www.theverge.com/rss/index.xml"
+    tier: 1
+    category: "tech"
+    subreddit: "technology"
+    delay_seconds: 2
+    max_articles: 5
+
+  - name: "Ars Technica"
+    url: "https://arstechnica.com"
+    feed_url: "https://feeds.arstechnica.com/arstechnica/index"
+    tier: 1
+    category: "tech"
+    subreddit: "technology"
+    delay_seconds: 2
+    max_articles: 5
+
+  - name: "Wired"
+    url: "https://www.wired.com"
+    feed_url: "https://www.wired.com/feed/rss"
+    tier: 1
+    category: "tech"
+    subreddit: "technology"
+    delay_seconds: 2
+    max_articles: 5
+
+  - name: "BBC News Tech"
+    url: "https://www.bbc.com/news/technology"
+    feed_url: "https://feeds.bbci.co.uk/news/technology/rss.xml"
+    tier: 1
+    category: "tech"
+    subreddit: "technews"
+    delay_seconds: 2
+    max_articles: 5
+
+  - name: "Reuters Tech"
+    url: "https://www.reuters.com/technology/"
+    feed_url: "https://www.reutersagency.com/feed/?taxonomy=best-sectors&post_type=best"
+    tier: 1
+    category: "tech"
+    subreddit: "technews"
+    delay_seconds: 3
+    max_articles: 5
+
+  - name: "Hacker News"
+    url: "https://news.ycombinator.com"
+    feed_url: "https://hnrss.org/frontpage"
+    tier: 1
+    category: "tech"
+    subreddit: "programming"
+    delay_seconds: 1
+    max_articles: 5
+
+  - name: "MIT Technology Review"
+    url: "https://www.technologyreview.com"
+    feed_url: "https://www.technologyreview.com/feed/"
+    tier: 1
+    category: "tech"
+    subreddit: "Futurology"
+    delay_seconds: 3
+    max_articles: 5
+
+  - name: "The Guardian Tech"
+    url: "https://www.theguardian.com/technology"
+    feed_url: "https://www.theguardian.com/uk/technology/rss"
+    tier: 1
+    category: "tech"
+    subreddit: "technology"
+    delay_seconds: 2
+    max_articles: 5
+
+  - name: "Engadget"
+    url: "https://www.engadget.com"
+    feed_url: "https://www.engadget.com/rss.xml"
+    tier: 1
+    category: "tech"
+    subreddit: "gadgets"
+    delay_seconds: 2
+    max_articles: 5
+
+  - name: "ZDNet"
+    url: "https://www.zdnet.com"
+    feed_url: "https://www.zdnet.com/news/rss.xml"
+    tier: 1
+    category: "tech"
+    subreddit: "technology"
+    delay_seconds: 2
+    max_articles: 5
+
+  - name: "VentureBeat"
+    url: "https://venturebeat.com"
+    feed_url: "https://venturebeat.com/feed/"
+    tier: 1
+    category: "tech"
+    subreddit: "technology"
+    delay_seconds: 2
+    max_articles: 5
+
+  - name: "CNBC Tech"
+    url: "https://www.cnbc.com/technology/"
+    feed_url: "https://search.cnbc.com/rs/search/combinedcms/view.xml?partnerId=wrss01&id=19854910"
+    tier: 1
+    category: "business"
+    subreddit: "business"
+    delay_seconds: 3
+    max_articles: 5
+
+  - name: "TechRadar"
+    url: "https://www.techradar.com"
+    feed_url: "https://www.techradar.com/rss"
+    tier: 1
+    category: "tech"
+    subreddit: "gadgets"
+    delay_seconds: 2
+    max_articles: 5
+
+  - name: "9to5Google"
+    url: "https://9to5google.com"
+    feed_url: "https://9to5google.com/feed/"
+    tier: 1
+    category: "tech"
+    subreddit: "Android"
+    delay_seconds: 2
+    max_articles: 5
+
+  # --- Tier 2: ScrapeGraphAI (uses Gemini API quota, slower) ---
+
+  - name: "Bloomberg Tech"
+    url: "https://www.bloomberg.com/technology"
+    feed_url: null
+    tier: 2
+    category: "business"
+    subreddit: "business"
+    delay_seconds: 5
+    max_articles: 3
+
+  - name: "AnandTech"
+    url: "https://www.anandtech.com"
+    feed_url: null
+    tier: 2
+    category: "tech"
+    subreddit: "hardware"
+    delay_seconds: 5
+    max_articles: 3
+
+  - name: "The Information"
+    url: "https://www.theinformation.com"
+    feed_url: null
+    tier: 2
+    category: "tech"
+    subreddit: "technology"
+    delay_seconds: 5
+    max_articles: 3

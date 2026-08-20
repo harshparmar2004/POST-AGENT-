@@ -1,0 +1,13 @@
+.env
+*.db
+__pycache__/
+*.pyc
+logs/*.log
+images/*.png
+queue/instagram/*/
+queue/linkedin/*/
+.venv/
+venv/
+*.egg-info/
+dist/
+build/

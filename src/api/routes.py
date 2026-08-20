@@ -1,0 +1,405 @@
+"""
+FastAPI route definitions for the NewsFlow dashboard.
+Serves API endpoints for stats, articles, sources, queues, logs, and pipeline triggers.
+"""
+
+import os
+import json
+import yaml
+import asyncio
+import logging
+from typing import Optional, List, Dict, Any
+from datetime import datetime, timedelta
+
+from fastapi import APIRouter, HTTPException, Query, BackgroundTask
+from fastapi.responses import FileResponse, JSONResponse
+from sqlalchemy import func, desc
+
+from src.db.models import Article, get_session
+from src.orchestrator import run_pipeline, load_sources
+
+logger = logging.getLogger(__name__)
+
+router = APIRouter(prefix="/api")
+
+PROJECT_ROOT = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+LOG_FILE_PATH = os.path.join(PROJECT_ROOT, "logs", "pipeline.log")
+IMAGES_DIR = os.path.join(PROJECT_ROOT, "images")
+QUEUE_DIR = os.path.join(PROJECT_ROOT, "queue")
+
+# Track background pipeline state
+_pipeline_state = {
+    "is_running": False,
+    "last_run": None,
+    "last_duration_seconds": None,
+    "last_result": None,
+    "current_stage": None
+}
+
+
+def _run_pipeline_background(max_articles: Optional[int] = None):
+    """Background runner for pipeline execution."""
+    global _pipeline_state
+    _pipeline_state["is_running"] = True
+    _pipeline_state["current_stage"] = "Running pipeline"
+    start = datetime.utcnow()
+    
+    try:
+        run_pipeline(max_articles=max_articles)
+        duration = (datetime.utcnow() - start).total_seconds()
+        _pipeline_state["last_run"] = datetime.utcnow().isoformat() + "Z"
+        _pipeline_state["last_duration_seconds"] = round(duration, 1)
+        _pipeline_state["last_result"] = "success"
+    except Exception as e:
+        logger.exception(f"Background pipeline run failed: {e}")
+        _pipeline_state["last_result"] = f"error: {str(e)}"
+    finally:
+        _pipeline_state["is_running"] = False
+        _pipeline_state["current_stage"] = None
+
+
+# ---------------------------------------------------------------------------
+# Overview & Stats Endpoints
+# ---------------------------------------------------------------------------
+
+@router.get("/stats")
+def get_stats():
+    """Returns overview statistics for dashboard metrics and platform distribution."""
+    with get_session() as session:
+        total = session.query(func.count(Article.id)).scalar() or 0
+        scraped = session.query(func.count(Article.id)).filter(Article.status == "scraped").scalar() or 0
+        ready = session.query(func.count(Article.id)).filter(Article.status == "ready").scalar() or 0
+        published = session.query(func.count(Article.id)).filter(Article.status == "published").scalar() or 0
+        queued = session.query(func.count(Article.id)).filter(Article.status == "queued").scalar() or 0
+        failed = session.query(func.count(Article.id)).filter(Article.status == "failed").scalar() or 0
+
+        reddit_posted = session.query(func.count(Article.id)).filter(Article.reddit_posted == True).scalar() or 0
+        twitter_posted = session.query(func.count(Article.id)).filter(Article.twitter_posted == True).scalar() or 0
+        instagram_queued = session.query(func.count(Article.id)).filter(Article.instagram_queued == True).scalar() or 0
+        linkedin_queued = session.query(func.count(Article.id)).filter(Article.linkedin_queued == True).scalar() or 0
+
+    return {
+        "summary": {
+            "total": total,
+            "scraped": scraped,
+            "ready": ready,
+            "published": published,
+            "queued": queued,
+            "failed": failed,
+        },
+        "platforms": {
+            "reddit": reddit_posted,
+            "twitter": twitter_posted,
+            "instagram": instagram_queued,
+            "linkedin": linkedin_queued,
+        },
+        "pipeline": _pipeline_state
+    }
+
+
+@router.get("/stats/timeline")
+def get_timeline(days: int = 14):
+    """Returns article count timeline grouped by date for charts."""
+    with get_session() as session:
+        cutoff = datetime.utcnow() - timedelta(days=days)
+        articles = session.query(Article.scraped_at, Article.status).filter(Article.scraped_at >= cutoff).all()
+
+    timeline_data: Dict[str, Dict[str, int]] = {}
+    for i in range(days):
+        day_str = (datetime.utcnow() - timedelta(days=days - 1 - i)).strftime("%Y-%m-%d")
+        timeline_data[day_str] = {"total": 0, "published": 0, "ready": 0, "scraped": 0, "queued": 0}
+
+    for scraped_at, status in articles:
+        if scraped_at:
+            day_str = scraped_at.strftime("%Y-%m-%d")
+            if day_str in timeline_data:
+                timeline_data[day_str]["total"] += 1
+                if status in timeline_data[day_str]:
+                    timeline_data[day_str][status] += 1
+
+    labels = list(timeline_data.keys())
+    totals = [v["total"] for v in timeline_data.values()]
+    published = [v["published"] for v in timeline_data.values()]
+    ready = [v["ready"] for v in timeline_data.values()]
+
+    return {
+        "labels": labels,
+        "totals": totals,
+        "published": published,
+        "ready": ready
+    }
+
+
+# ---------------------------------------------------------------------------
+# Article Management Endpoints
+# ---------------------------------------------------------------------------
+
+@router.get("/articles")
+def list_articles(
+    status: Optional[str] = None,
+    source: Optional[str] = None,
+    search: Optional[str] = None,
+    page: int = 1,
+    limit: int = 20
+):
+    """Paginated list of articles with filtering and search."""
+    with get_session() as session:
+        query = session.query(Article)
+
+        if status and status != "all":
+            query = query.filter(Article.status == status)
+
+        if source and source != "all":
+            query = query.filter(Article.source == source)
+
+        if search:
+            search_pattern = f"%{search}%"
+            query = query.filter(
+                (Article.title.ilike(search_pattern)) | 
+                (Article.body.ilike(search_pattern)) | 
+                (Article.source.ilike(search_pattern))
+            )
+
+        total_count = query.count()
+        query = query.order_by(desc(Article.id))
+        query = query.offset((page - 1) * limit).limit(limit)
+        items = query.all()
+
+        articles_data = []
+        for a in items:
+            articles_data.append({
+                "id": a.id,
+                "title": a.title,
+                "source": a.source,
+                "url": a.url,
+                "author": a.author,
+                "category": a.category,
+                "subreddit": a.subreddit,
+                "status": a.status,
+                "scraped_at": a.scraped_at.isoformat() if a.scraped_at else None,
+                "published_at": a.published_at.isoformat() if a.published_at else None,
+                "has_image": bool(a.image_path and os.path.exists(a.image_path)),
+                "image_url": f"/api/images/{a.id}.png" if a.image_path and os.path.exists(a.image_path) else None,
+                "platforms": {
+                    "reddit": a.reddit_posted,
+                    "twitter": a.twitter_posted,
+                    "instagram": a.instagram_queued,
+                    "linkedin": a.linkedin_queued,
+                }
+            })
+
+    return {
+        "articles": articles_data,
+        "pagination": {
+            "total": total_count,
+            "page": page,
+            "limit": limit,
+            "total_pages": (total_count + limit - 1) // limit if total_count > 0 else 1
+        }
+    }
+
+
+@router.get("/articles/{article_id}")
+def get_article(article_id: int):
+    """Returns complete article detail including all generated AI social content."""
+    with get_session() as session:
+        a = session.query(Article).filter(Article.id == article_id).first()
+        if not a:
+            raise HTTPException(status_code=404, detail="Article not found")
+
+        return {
+            "id": a.id,
+            "url_hash": a.url_hash,
+            "title": a.title,
+            "body": a.body,
+            "source": a.source,
+            "url": a.url,
+            "author": a.author,
+            "category": a.category,
+            "subreddit": a.subreddit,
+            "status": a.status,
+            "scraped_at": a.scraped_at.isoformat() if a.scraped_at else None,
+            "published_at": a.published_at.isoformat() if a.published_at else None,
+            "ai_content": {
+                "twitter_text": a.twitter_text,
+                "linkedin_text": a.linkedin_text,
+                "instagram_caption": a.instagram_caption,
+                "reddit_title": a.reddit_title,
+                "reddit_body": a.reddit_body,
+            },
+            "image_path": a.image_path,
+            "image_url": f"/api/images/{a.id}.png" if a.image_path and os.path.exists(a.image_path) else None,
+            "posting_status": {
+                "reddit": a.reddit_posted,
+                "twitter": a.twitter_posted,
+                "instagram": a.instagram_queued,
+                "linkedin": a.linkedin_queued,
+            }
+        }
+
+
+@router.delete("/articles/{article_id}")
+def delete_article(article_id: int):
+    """Delete an article from database and remove associated image/queue files."""
+    with get_session() as session:
+        a = session.query(Article).filter(Article.id == article_id).first()
+        if not a:
+            raise HTTPException(status_code=404, detail="Article not found")
+
+        # Cleanup image file if exists
+        if a.image_path and os.path.exists(a.image_path):
+            try:
+                os.remove(a.image_path)
+            except Exception as e:
+                logger.warning(f"Could not remove image file {a.image_path}: {e}")
+
+        session.delete(a)
+        session.commit()
+
+    return {"success": True, "message": f"Article {article_id} deleted"}
+
+
+# ---------------------------------------------------------------------------
+# Sources & Configuration
+# ---------------------------------------------------------------------------
+
+@router.get("/sources")
+def get_sources_list():
+    """List all sources from config YAML merged with live database statistics."""
+    sources_cfg = load_sources()
+    
+    with get_session() as session:
+        # Article counts per source
+        counts_raw = session.query(Article.source, func.count(Article.id)).group_by(Article.source).all()
+        counts_map = {src: count for src, count in counts_raw}
+
+    result = []
+    for s in sources_cfg:
+        name = s.get("name")
+        result.append({
+            "name": name,
+            "url": s.get("url"),
+            "feed_url": s.get("feed_url"),
+            "tier": s.get("tier", 1),
+            "category": s.get("category"),
+            "subreddit": s.get("subreddit"),
+            "delay_seconds": s.get("delay_seconds", 2),
+            "max_articles": s.get("max_articles", 5),
+            "article_count": counts_map.get(name, 0)
+        })
+
+    return {"sources": result}
+
+
+# ---------------------------------------------------------------------------
+# Local Queue Viewer (Instagram & LinkedIn)
+# ---------------------------------------------------------------------------
+
+@router.get("/queue/{platform}")
+def get_queue(platform: str):
+    """Returns queued posts for instagram or linkedin."""
+    if platform not in ["instagram", "linkedin"]:
+        raise HTTPException(status_code=400, detail="Invalid platform. Use 'instagram' or 'linkedin'.")
+
+    platform_dir = os.path.join(QUEUE_DIR, platform)
+    if not os.path.exists(platform_dir):
+        return {"items": []}
+
+    items = []
+    for article_id in sorted(os.listdir(platform_dir), reverse=True):
+        item_dir = os.path.join(platform_dir, article_id)
+        if not os.path.isdir(item_dir):
+            continue
+
+        json_file = os.path.join(item_dir, "post.json")
+        if not os.path.exists(json_file):
+            continue
+
+        try:
+            with open(json_file, "r", encoding="utf-8") as f:
+                data = json.load(f)
+
+            image_file = os.path.join(item_dir, "image.png")
+            has_image = os.path.exists(image_file)
+
+            items.append({
+                "article_id": article_id,
+                "platform": platform,
+                "title": data.get("title", f"Article #{article_id}"),
+                "source": data.get("source", "Unknown"),
+                "content": data.get("caption") if platform == "instagram" else data.get("text"),
+                "created_at": data.get("created_at"),
+                "has_image": has_image,
+                "image_url": f"/api/queue/{platform}/{article_id}/image.png" if has_image else None
+            })
+        except Exception as e:
+            logger.error(f"Error reading queue item {item_dir}: {e}")
+
+    return {"items": items}
+
+
+@router.get("/queue/{platform}/{article_id}/image.png")
+def get_queue_image(platform: str, article_id: str):
+    """Serve image for a queued item."""
+    img_path = os.path.join(QUEUE_DIR, platform, article_id, "image.png")
+    if not os.path.exists(img_path):
+        raise HTTPException(status_code=404, detail="Queue image not found")
+    return FileResponse(img_path, media_type="image/png")
+
+
+# ---------------------------------------------------------------------------
+# Images & Logs
+# ---------------------------------------------------------------------------
+
+@router.get("/images/{article_id}.png")
+def get_article_image(article_id: int):
+    """Serve article thumbnail image."""
+    img_path = os.path.join(IMAGES_DIR, f"{article_id}.png")
+    if not os.path.exists(img_path):
+        raise HTTPException(status_code=404, detail="Image not found")
+    return FileResponse(img_path, media_type="image/png")
+
+
+@router.get("/logs")
+def get_logs(lines: int = 200):
+    """Returns the tail of the log file."""
+    if not os.path.exists(LOG_FILE_PATH):
+        return {"logs": ["Log file does not exist yet. Run the pipeline first."]}
+
+    try:
+        with open(LOG_FILE_PATH, "r", encoding="utf-8") as f:
+            all_lines = f.readlines()
+            tail = [line.strip() for line in all_lines[-lines:]]
+            return {"logs": tail, "total_lines": len(all_lines)}
+    except Exception as e:
+        return {"logs": [f"Error reading log file: {e}"]}
+
+
+# ---------------------------------------------------------------------------
+# Pipeline Trigger
+# ---------------------------------------------------------------------------
+
+@router.post("/pipeline/run")
+def trigger_pipeline(max_articles: Optional[int] = Query(None, description="Max articles per source/stage")):
+    """Triggers the full automation pipeline asynchronously in the background."""
+    global _pipeline_state
+    if _pipeline_state["is_running"]:
+        return JSONResponse(
+            status_code=400,
+            content={"message": "Pipeline is already running!", "state": _pipeline_state}
+        )
+
+    # Start task in background thread
+    asyncio.create_task(asyncio.to_thread(_run_pipeline_background, max_articles))
+
+    return {
+        "success": True,
+        "message": f"Pipeline triggered in background! (max_articles={max_articles or 'default'})",
+        "state": _pipeline_state
+    }
+
+
+@router.get("/pipeline/status")
+def get_pipeline_status():
+    """Returns current execution status of the pipeline."""
+    return _pipeline_state

@@ -90,6 +90,38 @@ class Article(Base):
         )
 
 
+class PipelineRun(Base):
+    """
+    Tracks pipeline batch execution history for scalability and logging:
+      started_at, completed_at, status, counts per stage, duration.
+    """
+
+    __tablename__ = "pipeline_runs"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
+    started_at: Mapped[datetime] = mapped_column(DateTime, default=func.now())
+    completed_at: Mapped[datetime | None] = mapped_column(DateTime, nullable=True)
+    status: Mapped[str] = mapped_column(String(50), default="running")  # running, completed, failed
+    articles_scraped: Mapped[int] = mapped_column(Integer, default=0)
+    articles_rewritten: Mapped[int] = mapped_column(Integer, default=0)
+    images_generated: Mapped[int] = mapped_column(Integer, default=0)
+    published_count: Mapped[int] = mapped_column(Integer, default=0)
+    duration_seconds: Mapped[float] = mapped_column(Integer, default=0.0)
+
+    def to_dict(self) -> dict:
+        return {
+            "id": self.id,
+            "started_at": self.started_at.isoformat() if self.started_at else None,
+            "completed_at": self.completed_at.isoformat() if self.completed_at else None,
+            "status": self.status,
+            "articles_scraped": self.articles_scraped,
+            "articles_rewritten": self.articles_rewritten,
+            "images_generated": self.images_generated,
+            "published_count": self.published_count,
+            "duration_seconds": self.duration_seconds
+        }
+
+
 # ---------------------------------------------------------------------------
 # Engine & session helpers
 # ---------------------------------------------------------------------------

@@ -303,6 +303,26 @@ def run_pipeline(max_articles: int | None = None) -> None:
 
     # Summary
     elapsed = time.time() - start_time
+    total_pub = sum(publish_results.values())
+
+    # Save PipelineRun history in DB
+    try:
+        from src.db.models import PipelineRun
+        with get_session() as session:
+            pr = PipelineRun(
+                started_at=datetime.utcfromtimestamp(start_time),
+                completed_at=datetime.utcnow(),
+                status="completed",
+                articles_scraped=new_articles,
+                articles_rewritten=rewritten,
+                images_generated=images,
+                published_count=total_pub,
+                duration_seconds=round(elapsed, 2)
+            )
+            session.add(pr)
+            session.commit()
+    except Exception as ex:
+        logger.warning(f"Failed to record PipelineRun history: {ex}")
 
     logger.info("╔══════════════════════════════════════════════════════════╗")
     logger.info("║              PIPELINE RUN COMPLETE                     ║")

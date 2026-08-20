@@ -575,6 +575,15 @@ def get_pipeline_status():
     return _pipeline_state
 
 
+@router.get("/pipeline/history")
+def get_pipeline_history(limit: int = 50):
+    """Returns past pipeline batch execution runs history from SQLite database."""
+    from src.db.models import PipelineRun
+    with get_session() as session:
+        runs = session.query(PipelineRun).order_by(PipelineRun.id.desc()).limit(limit).all()
+        return {"history": [r.to_dict() for r in runs]}
+
+
 # ---------------------------------------------------------------------------
 # Settings & API Keys Management
 # ---------------------------------------------------------------------------

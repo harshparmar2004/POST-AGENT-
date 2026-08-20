@@ -25,10 +25,10 @@ const App = {
       this.navigateTo(hash, false);
     });
 
-    // Run Pipeline button handler
+    // Run / Stop Pipeline button handler
     const runBtn = document.getElementById('run-pipeline-btn');
     if (runBtn) {
-      runBtn.addEventListener('click', () => this.triggerPipeline());
+      runBtn.addEventListener('click', () => this.handlePipelineButtonClick());
     }
 
     // Auto-Pilot toggle handler
@@ -61,7 +61,15 @@ const App = {
 
     // Start background status polling
     this.checkPipelineStatus();
-    setInterval(() => this.checkPipelineStatus(), 5000);
+    setInterval(() => this.checkPipelineStatus(), 4000);
+  },
+
+  async handlePipelineButtonClick() {
+    if (this.pipelineRunning) {
+      await this.stopPipeline();
+    } else {
+      await this.triggerPipeline();
+    }
   },
 
   async toggleAutoPilot(enabled) {
@@ -119,7 +127,6 @@ const App = {
       const modal = document.getElementById('add-source-modal');
       if (modal) modal.classList.remove('active');
 
-      // Refresh sources page if active
       if (this.currentPage === 'sources' && typeof SourcesPage !== 'undefined') {
         SourcesPage.render(document.getElementById('page-container'));
       }
@@ -138,12 +145,10 @@ const App = {
       window.location.hash = page;
     }
 
-    // Update active navbar item
     document.querySelectorAll('.nav-item').forEach(item => {
       item.classList.toggle('active', item.getAttribute('data-page') === page);
     });
 
-    // Update header title & subtitle
     const pageTitles = {
       dashboard: { title: 'Dashboard Overview', subtitle: 'Real-time automation analytics and content pipeline status' },
       articles: { title: 'Articles Browser', subtitle: 'Manage scraped articles, AI rewrites, and platform status' },
@@ -159,7 +164,6 @@ const App = {
     document.getElementById('page-title').textContent = header.title;
     document.getElementById('page-subtitle').textContent = header.subtitle;
 
-    // Render target page
     const container = document.getElementById('page-container');
     container.innerHTML = '<div class="glass-card"><p>Loading page content...</p></div>';
 
@@ -181,7 +185,6 @@ const App = {
       SettingsPage.render(container);
     }
 
-    // Re-initialize Lucide icons
     if (window.lucide) {
       window.lucide.createIcons();
     }
@@ -202,22 +205,46 @@ const App = {
   },
 
   async triggerPipeline() {
-    const runBtn = document.getElementById('run-pipeline-btn');
     if (this.pipelineRunning) {
-      this.showToast('Pipeline is already running!', 'warning');
-      return;
+      return this.stopPipeline();
     }
 
     try {
-      if (runBtn) runBtn.disabled = true;
       const res = await this.fetchApi('/api/pipeline/run', { method: 'POST' });
       this.showToast(res.message || 'Pipeline started!', 'success');
+      this.pipelineRunning = true;
+      this.updatePipelineButtonState();
       this.checkPipelineStatus();
     } catch (err) {
       this.showToast('Failed to trigger pipeline', 'error');
-    } finally {
-      if (runBtn) runBtn.disabled = false;
     }
+  },
+
+  async stopPipeline() {
+    try {
+      const res = await this.fetchApi('/api/pipeline/stop', { method: 'POST' });
+      this.showToast(res.message || 'Pipeline execution stopped!', 'info');
+      this.pipelineRunning = false;
+      this.updatePipelineButtonState();
+    } catch (err) {
+      this.showToast(`Failed to stop pipeline: ${err.message}`, 'error');
+    }
+  },
+
+  updatePipelineButtonState() {
+    const runBtn = document.getElementById('run-pipeline-btn');
+    if (!runBtn) return;
+
+    if (this.pipelineRunning) {
+      runBtn.innerHTML = '<i data-lucide="square"></i> 🛑 Stop Pipeline';
+      runBtn.style.background = '#c62828';
+      runBtn.style.color = '#ffffff';
+    } else {
+      runBtn.innerHTML = '<i data-lucide="play"></i> Run Pipeline';
+      runBtn.style.background = 'var(--primary-purple)';
+      runBtn.style.color = '#ffffff';
+    }
+    if (window.lucide) window.lucide.createIcons();
   },
 
   async checkPipelineStatus() {
@@ -233,16 +260,16 @@ const App = {
         this.pipelineRunning = true;
         if (dot) dot.className = 'dot-pulse running';
         if (text) text.textContent = 'Pipeline Running...';
+        this.updatePipelineButtonState();
       } else {
         if (this.pipelineRunning) {
-          // It was running, now finished
           this.showToast('Pipeline run completed!', 'success');
-          // Refresh current page
           this.navigateTo(this.currentPage, false);
         }
         this.pipelineRunning = false;
         if (dot) dot.className = 'dot-pulse green';
         if (text) text.textContent = data.last_run ? `Last run: ${new Date(data.last_run).toLocaleTimeString()}` : 'Idle (Ready)';
+        this.updatePipelineButtonState();
       }
     } catch (e) {
       console.warn("Status check failed", e);

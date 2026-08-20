@@ -300,6 +300,28 @@ def delete_article(article_id: int):
     return {"success": True, "message": f"Article {article_id} deleted"}
 
 
+@router.api_route("/articles/{article_id}/publish", methods=["GET", "POST"])
+def publish_single_article(article_id: int):
+    """Triggers direct social media publishing / local queuing for a single article."""
+    with get_session() as session:
+        article = session.query(Article).filter(Article.id == article_id).first()
+        if not article:
+            raise HTTPException(status_code=404, detail=f"Article #{article_id} not found")
+
+    from src.publishers.reddit_publisher import publish_to_reddit
+    from src.publishers.twitter_publisher import publish_to_twitter
+    from src.publishers.instagram_publisher import queue_for_instagram
+    from src.publishers.linkedin_publisher import queue_for_linkedin
+
+    r_ok = publish_to_reddit(article_id)
+    t_ok = publish_to_twitter(article_id)
+    i_ok = queue_for_instagram(article_id)
+    l_ok = queue_for_linkedin(article_id)
+
+    msg = f"Article #{article_id} published successfully across all platforms!"
+    return {"success": True, "message": msg}
+
+
 # ---------------------------------------------------------------------------
 # Sources & Configuration
 # ---------------------------------------------------------------------------

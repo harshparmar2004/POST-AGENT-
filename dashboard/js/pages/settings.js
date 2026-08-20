@@ -93,16 +93,19 @@ const SettingsPage = {
               </div>
             </div>
 
-            <!-- Google Gemini API Key -->
+            <!-- Google Gemini & Nano Banana API Key -->
             <div style="display: flex; flex-direction: column; gap: 4px; background: var(--bg-surface); padding: 14px; border-radius: 8px; border: 1px solid var(--border-color);">
               <div style="display: flex; justify-content: space-between; align-items: center;">
-                <label style="font-size: 0.84rem; font-weight: 700; color: #a855f7;">✨ Google Gemini API Key (Gemini 2.5 Flash)</label>
+                <label style="font-size: 0.84rem; font-weight: 700; color: #a855f7;">🍌 Nano Banana / Google Gemini API Key (AI Pro Plan - Imagen 3 / Gemini 2.5)</label>
                 <span style="font-size: 0.76rem; color: var(--text-dim);">Get key: <a href="https://aistudio.google.com/apikey" target="_blank" style="color: #a855f7; font-weight: 600;">aistudio.google.com/apikey</a></span>
               </div>
               <div style="display: flex; gap: 10px; margin-top: 4px;">
-                <input type="password" id="input-GOOGLE_API_KEY" class="filter-select" style="flex: 1; background: var(--bg-card);" placeholder="Enter Gemini key (AIzaSy...)" />
+                <input type="password" id="input-GOOGLE_API_KEY" class="filter-select" style="flex: 1; background: var(--bg-card);" placeholder="Enter Gemini / Nano Banana key (AIzaSy...)" />
                 <button class="btn btn-secondary" onclick="SettingsPage.toggleVisibility('input-GOOGLE_API_KEY')">Show/Hide</button>
               </div>
+              <span style="font-size: 0.74rem; color: var(--text-muted); margin-top: 4px;">
+                Includes <strong>Nano Banana (Imagen 3.0 Generate)</strong> for high-resolution contextual social media post cards.
+              </span>
             </div>
 
           </div>

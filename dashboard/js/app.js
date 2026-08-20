@@ -150,14 +150,14 @@ const App = {
     });
 
     const pageTitles = {
-      dashboard: { title: 'Dashboard Overview', subtitle: 'Real-time automation analytics and content pipeline status' },
-      articles: { title: 'Articles Browser', subtitle: 'Manage scraped articles, AI rewrites, and platform status' },
-      sources: { title: 'News Sources', subtitle: 'Configured RSS feeds and ScrapeGraphAI web sources' },
-      queue: { title: 'Local Queue Viewer', subtitle: 'Prepared content for Instagram and LinkedIn manual posting' },
-      media: { title: 'Media Catalog & Studio', subtitle: 'Visual catalog of Gemini AI generated slides & 1-click posting' },
-      pipeline: { title: 'Pipeline Flow & History', subtitle: 'n8n-style agentic workflow node visualizer & saved execution logs' },
-      logs: { title: 'System Execution Logs', subtitle: 'Live terminal stream from pipeline.log' },
-      settings: { title: 'API Keys & Configuration', subtitle: 'Manage Gemini, Reddit, Twitter, Instagram & LinkedIn credentials' }
+      dashboard: { title: 'Dashboard Overview', subtitle: 'Real-time 3-pillar content automation analytics and live system status' },
+      sources: { title: 'Pillar 1: News Ingestion & Scrapers', subtitle: 'Manage news source links, RSS feeds, and trigger automated crawlers' },
+      media: { title: 'Pillar 2: Nano Banana MCP Studio & AI Rewriter', subtitle: 'Custom AI prompt sandbox, style presets, and 1080x1080 slide deck studio' },
+      queue: { title: 'Pillar 3: Local Queue & Multi-API Dispatch', subtitle: 'Prepared post bundles for 1-click publishing to Instagram, LinkedIn, Twitter & Reddit' },
+      articles: { title: 'Articles Vault', subtitle: 'Database of all scraped articles, AI rewrites, and platform status' },
+      pipeline: { title: 'Pipeline Workflow', subtitle: 'n8n-style agentic workflow node visualizer & live content progression' },
+      logs: { title: 'System Logs Stream', subtitle: 'Live terminal stream from pipeline.log' },
+      settings: { title: 'API Keys & Configuration', subtitle: 'Manage Groq, OpenAI, Gemini, Reddit, Twitter, Instagram & LinkedIn credentials' }
     };
 
     const header = pageTitles[page] || pageTitles.dashboard;

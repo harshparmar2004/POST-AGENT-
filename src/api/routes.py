@@ -530,6 +530,19 @@ def get_article_image(article_id: int):
     return FileResponse(img_path, media_type="image/png")
 
 
+@router.get("/placeholder/{width}/{height}")
+def placeholder_image(width: int = 400, height: int = 220):
+    """Returns a clean SVG placeholder card when article image is pending generation."""
+    from fastapi import Response
+    svg = f'''<svg xmlns="http://www.w3.org/2000/svg" width="{width}" height="{height}" viewBox="0 0 {width} {height}">
+      <rect width="100%" height="100%" fill="#FAF7F2"/>
+      <rect x="15" y="15" width="{width-30}" height="{height-30}" rx="6" fill="none" stroke="#D97757" stroke-width="2" stroke-dasharray="6,6"/>
+      <text x="50%" y="45%" dominant-baseline="middle" text-anchor="middle" font-family="sans-serif" font-size="15" font-weight="bold" fill="#D97757">🎨 Nano Banana Studio</text>
+      <text x="50%" y="62%" dominant-baseline="middle" text-anchor="middle" font-family="sans-serif" font-size="12" fill="#6E6B65">Click "Run Pipeline" to generate</text>
+    </svg>'''
+    return Response(content=svg, media_type="image/svg+xml")
+
+
 @router.get("/logs")
 def get_logs(lines: int = 200):
     """Returns the tail of the log file."""

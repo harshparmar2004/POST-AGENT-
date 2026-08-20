@@ -291,6 +291,135 @@ def get_sources_list():
     return {"sources": result}
 
 
+@router.post("/sources")
+def add_source(source_data: Dict[str, Any]):
+    """Add a new news source via URL directly to sources.yaml."""
+    name = source_data.get("name", "").strip()
+    url = source_data.get("url", "").strip()
+    feed_url = source_data.get("feed_url", "").strip() or None
+    tier = int(source_data.get("tier", 1))
+    category = source_data.get("category", "tech").strip()
+    subreddit = source_data.get("subreddit", "technology").strip()
+    delay_seconds = int(source_data.get("delay_seconds", 2))
+    max_articles = int(source_data.get("max_articles", 5))
+
+    if not url:
+        raise HTTPException(status_code=400, detail="Website URL is required")
+
+    if not name:
+        from urllib.parse import urlparse
+        name = urlparse(url).netloc.replace("www.", "").capitalize()
+
+    # Simple RSS auto-detection if feed_url not specified and tier == 1
+    if tier == 1 and not feed_url:
+        import feedparser
+        possible_feeds = [
+            url.rstrip("/") + "/feed/",
+            url.rstrip("/") + "/rss",
+            url.rstrip("/") + "/feed",
+            url.rstrip("/") + "/rss.xml",
+            url.rstrip("/") + "/index.xml"
+        ]
+        for pf in possible_feeds:
+            try:
+                parsed = feedparser.parse(pf)
+                if parsed.entries:
+                    feed_url = pf
+                    break
+            except Exception:
+                pass
+
+    config_file = os.path.join(PROJECT_ROOT, "config", "sources.yaml")
+    
+    with open(config_file, "r", encoding="utf-8") as f:
+        cfg = yaml.safe_load(f) or {}
+
+    sources = cfg.get("sources", [])
+    
+    # Check duplicate
+    for existing in sources:
+        if existing.get("url") == url or existing.get("name") == name:
+            raise HTTPException(status_code=400, detail="Source with this URL or name already exists!")
+
+    new_source = {
+        "name": name,
+        "url": url,
+        "feed_url": feed_url,
+        "tier": tier,
+        "category": category,
+        "subreddit": subreddit,
+        "delay_seconds": delay_seconds,
+        "max_articles": max_articles
+    }
+
+    sources.append(new_source)
+    cfg["sources"] = sources
+
+    with open(config_file, "w", encoding="utf-8") as f:
+        yaml.safe_dump(cfg, f, sort_keys=False)
+
+    return {"success": True, "message": f"Source '{name}' added successfully!", "source": new_source}
+
+
+# ---------------------------------------------------------------------------
+# Auto-Pilot Mode Scheduler
+# ---------------------------------------------------------------------------
+
+_autopilot_state = {
+    "enabled": False,
+    "interval_minutes": 15,
+    "last_run": None,
+    "next_run": None
+}
+
+_autopilot_task = None
+
+
+async def _autopilot_loop():
+    logger.info("Auto-Pilot loop started")
+    while _autopilot_state["enabled"]:
+        interval_secs = _autopilot_state["interval_minutes"] * 60
+        _autopilot_state["next_run"] = (datetime.utcnow() + timedelta(seconds=interval_secs)).isoformat() + "Z"
+        
+        await asyncio.sleep(interval_secs)
+        
+        if not _autopilot_state["enabled"]:
+            break
+            
+        if not _pipeline_state["is_running"]:
+            logger.info("Auto-Pilot: Triggering scheduled automatic pipeline check...")
+            _autopilot_state["last_run"] = datetime.utcnow().isoformat() + "Z"
+            _run_pipeline_background(max_articles=3)
+
+
+@router.get("/autopilot")
+def get_autopilot_status():
+    return _autopilot_state
+
+
+@router.post("/autopilot")
+async def toggle_autopilot(data: Dict[str, Any]):
+    global _autopilot_task, _autopilot_state
+    
+    enabled = bool(data.get("enabled", False))
+    interval = int(data.get("interval_minutes", 15))
+    
+    _autopilot_state["enabled"] = enabled
+    _autopilot_state["interval_minutes"] = interval
+    
+    if enabled:
+        if _autopilot_task is None or _autopilot_task.done():
+            _autopilot_task = asyncio.create_task(_autopilot_loop())
+        msg = f"Auto-Pilot ENABLED! Checking sources every {interval} minutes."
+    else:
+        if _autopilot_task and not _autopilot_task.done():
+            _autopilot_task.cancel()
+        _autopilot_state["next_run"] = None
+        msg = "Auto-Pilot DISABLED."
+        
+    return {"success": True, "message": msg, "state": _autopilot_state}
+
+
 # ---------------------------------------------------------------------------
 # Local Queue Viewer (Instagram & LinkedIn)
 # ---------------------------------------------------------------------------

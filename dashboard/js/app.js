@@ -31,11 +31,29 @@ const App = {
       runBtn.addEventListener('click', () => this.triggerPipeline());
     }
 
-    // Modal close handler
+    // Auto-Pilot toggle handler
+    const apChk = document.getElementById('autopilot-toggle-chk');
+    if (apChk) {
+      apChk.addEventListener('change', (e) => this.toggleAutoPilot(e.target.checked));
+      this.checkAutoPilotStatus();
+    }
+
+    // Modal close handlers
     const closeBtn = document.getElementById('modal-close-btn');
     const backdrop = document.querySelector('.modal-backdrop');
     if (closeBtn) closeBtn.addEventListener('click', () => this.closeModal());
     if (backdrop) backdrop.addEventListener('click', () => this.closeModal());
+
+    const addSourceCloseBtn = document.getElementById('add-source-close-btn');
+    if (addSourceCloseBtn) addSourceCloseBtn.addEventListener('click', () => {
+      const modal = document.getElementById('add-source-modal');
+      if (modal) modal.classList.remove('active');
+    });
+
+    const submitAddSourceBtn = document.getElementById('submit-add-source-btn');
+    if (submitAddSourceBtn) {
+      submitAddSourceBtn.addEventListener('click', () => this.submitAddSource());
+    }
 
     // Initial page load
     const initialPage = window.location.hash.replace('#', '') || 'dashboard';
@@ -44,6 +62,70 @@ const App = {
     // Start background status polling
     this.checkPipelineStatus();
     setInterval(() => this.checkPipelineStatus(), 5000);
+  },
+
+  async toggleAutoPilot(enabled) {
+    const label = document.getElementById('autopilot-toggle-label');
+    try {
+      const res = await this.fetchApi('/api/autopilot', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ enabled, interval_minutes: 15 })
+      });
+
+      if (label) label.textContent = enabled ? 'Auto-Pilot: ON (15m)' : 'Auto-Pilot: OFF';
+      this.showToast(res.message, enabled ? 'success' : 'info');
+    } catch (e) {
+      const chk = document.getElementById('autopilot-toggle-chk');
+      if (chk) chk.checked = !enabled;
+    }
+  },
+
+  async checkAutoPilotStatus() {
+    try {
+      const res = await fetch('/api/autopilot');
+      if (!res.ok) return;
+      const data = await res.json();
+      const chk = document.getElementById('autopilot-toggle-chk');
+      const label = document.getElementById('autopilot-toggle-label');
+      if (chk) chk.checked = data.enabled;
+      if (label) label.textContent = data.enabled ? 'Auto-Pilot: ON (15m)' : 'Auto-Pilot: OFF';
+    } catch (e) {}
+  },
+
+  async submitAddSource() {
+    const url = document.getElementById('new-source-url').value.trim();
+    const name = document.getElementById('new-source-name').value.trim();
+    const category = document.getElementById('new-source-category').value.trim();
+    const subreddit = document.getElementById('new-source-subreddit').value.trim();
+    const tier = document.getElementById('new-source-tier').value;
+    const delay = document.getElementById('new-source-delay').value;
+
+    if (!url) {
+      this.showToast('Please enter a website URL', 'warning');
+      return;
+    }
+
+    try {
+      const res = await this.fetchApi('/api/sources', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          name, url, category, subreddit, tier: parseInt(tier), delay_seconds: parseInt(delay)
+        })
+      });
+
+      this.showToast(res.message, 'success');
+      const modal = document.getElementById('add-source-modal');
+      if (modal) modal.classList.remove('active');
+
+      // Refresh sources page if active
+      if (this.currentPage === 'sources' && typeof SourcesPage !== 'undefined') {
+        SourcesPage.render(document.getElementById('page-container'));
+      }
+    } catch (err) {
+      this.showToast(`Failed to add source: ${err.message}`, 'error');
+    }
   },
 
   navigateTo(page, updateHash = true) {

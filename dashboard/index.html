@@ -93,6 +93,11 @@
             <span id="pipeline-status-text">Idle</span>
           </div>
 
+          <label style="display: flex; align-items: center; gap: 8px; font-size: 0.85rem; background: var(--bg-card); padding: 6px 14px; border-radius: 20px; border: 1px solid var(--border-color); cursor: pointer;" title="Automatically check sources for news every 15 minutes">
+            <input type="checkbox" id="autopilot-toggle-chk" style="accent-color: var(--primary-purple); cursor: pointer;" />
+            <span style="font-weight: 600;" id="autopilot-toggle-label">Auto-Pilot: OFF</span>
+          </label>
+
           <button id="run-pipeline-btn" class="btn btn-primary btn-glow">
             <i data-lucide="play"></i>
             <span>Run Pipeline</span>
@@ -106,6 +111,66 @@
       </div>
 
     </main>
+  </div>
+
+  <!-- Add Source Modal -->
+  <div id="add-source-modal" class="modal">
+    <div class="modal-backdrop"></div>
+    <div class="modal-content glass-card" style="max-width: 540px;">
+      <div class="modal-header">
+        <div>
+          <h2>Add New Source URL</h2>
+          <p style="font-size: 0.82rem; color: var(--text-muted); margin-top: 2px;">Add any news website URL to scrape automatically</p>
+        </div>
+        <button class="btn-icon" id="add-source-close-btn">
+          <i data-lucide="x"></i>
+        </button>
+      </div>
+      <div class="modal-body" style="display: flex; flex-direction: column; gap: 14px;">
+        <div style="display: flex; flex-direction: column; gap: 4px;">
+          <label style="font-size: 0.85rem; font-weight: 600;">Website URL *</label>
+          <input type="url" id="new-source-url" class="filter-select" placeholder="https://news.ycombinator.com" required />
+        </div>
+
+        <div style="display: flex; flex-direction: column; gap: 4px;">
+          <label style="font-size: 0.85rem; font-weight: 600;">Source Name (Optional)</label>
+          <input type="text" id="new-source-name" class="filter-select" placeholder="e.g. Hacker News (leave empty to auto-detect)" />
+        </div>
+
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+          <div style="display: flex; flex-direction: column; gap: 4px;">
+            <label style="font-size: 0.85rem; font-weight: 600;">Category</label>
+            <input type="text" id="new-source-category" class="filter-select" value="tech" />
+          </div>
+
+          <div style="display: flex; flex-direction: column; gap: 4px;">
+            <label style="font-size: 0.85rem; font-weight: 600;">Target Subreddit</label>
+            <input type="text" id="new-source-subreddit" class="filter-select" value="technology" />
+          </div>
+        </div>
+
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+          <div style="display: flex; flex-direction: column; gap: 4px;">
+            <label style="font-size: 0.85rem; font-weight: 600;">Scrape Tier</label>
+            <select id="new-source-tier" class="filter-select">
+              <option value="1">Tier 1 (Fast RSS / Auto-detect)</option>
+              <option value="2">Tier 2 (AI ScrapeGraph for JS sites)</option>
+            </select>
+          </div>
+
+          <div style="display: flex; flex-direction: column; gap: 4px;">
+            <label style="font-size: 0.85rem; font-weight: 600;">Crawl Delay (s)</label>
+            <input type="number" id="new-source-delay" class="filter-select" value="2" min="1" max="10" />
+          </div>
+        </div>
+
+        <div style="display: flex; justify-content: flex-end; gap: 12px; margin-top: 10px;">
+          <button class="btn btn-primary btn-glow" id="submit-add-source-btn" style="width: 100%;">
+            <i data-lucide="plus"></i> Add Source to Pipeline
+          </button>
+        </div>
+      </div>
+    </div>
   </div>
 
   <!-- Article Detail Modal -->

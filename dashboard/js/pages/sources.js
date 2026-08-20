@@ -1,13 +1,22 @@
 /**
- * Sources Page Renderer — Grid of news sources with metrics
+ * Sources Page Renderer — Grid of news sources with metrics and Add Source URL modal
  */
 const SourcesPage = {
   async render(container) {
     container.innerHTML = `
+      <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 24px;">
+        <p style="font-size: 0.9rem; color: var(--text-muted);">Active news websites and RSS feeds monitored by the scraper engine</p>
+        <button class="btn btn-primary btn-glow" onclick="SourcesPage.openAddModal()">
+          <i data-lucide="plus"></i> Add Source URL
+        </button>
+      </div>
+
       <div class="sources-grid" id="sources-grid">
         <div class="glass-card"><p>Loading configured news sources...</p></div>
       </div>
     `;
+
+    if (window.lucide) window.lucide.createIcons();
 
     await this.loadSources();
   },
@@ -53,5 +62,15 @@ const SourcesPage = {
     } catch (e) {
       console.error("Failed to load sources page", e);
     }
+  },
+
+  openAddModal() {
+    const modal = document.getElementById('add-source-modal');
+    if (modal) modal.classList.add('active');
+  },
+
+  closeAddModal() {
+    const modal = document.getElementById('add-source-modal');
+    if (modal) modal.classList.remove('active');
   }
 };

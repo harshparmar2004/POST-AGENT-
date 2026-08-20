@@ -133,15 +133,15 @@ const DashboardPage = {
           {
             label: 'Total Scraped',
             data: data.totals,
-            borderColor: '#8b5cf6',
-            backgroundColor: 'rgba(139, 92, 246, 0.15)',
+            borderColor: '#d97757',
+            backgroundColor: 'rgba(217, 119, 87, 0.12)',
             fill: true,
             tension: 0.4
           },
           {
             label: 'Published',
             data: data.published,
-            borderColor: '#10b981',
+            borderColor: '#2e7d32',
             backgroundColor: 'transparent',
             tension: 0.4
           }
@@ -151,11 +151,11 @@ const DashboardPage = {
         responsive: true,
         maintainAspectRatio: false,
         plugins: {
-          legend: { labels: { color: '#9ca3af', font: { family: 'Inter' } } }
+          legend: { labels: { color: '#6e6b65', font: { family: 'Inter' } } }
         },
         scales: {
-          x: { grid: { color: 'rgba(255,255,255,0.05)' }, ticks: { color: '#9ca3af' } },
-          y: { grid: { color: 'rgba(255,255,255,0.05)' }, ticks: { color: '#9ca3af', precision: 0 } }
+          x: { grid: { color: '#eae5dd' }, ticks: { color: '#6e6b65' } },
+          y: { grid: { color: '#eae5dd' }, ticks: { color: '#6e6b65', precision: 0 } }
         }
       }
     });
@@ -171,7 +171,7 @@ const DashboardPage = {
         labels: ['Reddit (Live)', 'Twitter (Live)', 'Instagram (Queue)', 'LinkedIn (Queue)'],
         datasets: [{
           data: [platforms.reddit, platforms.twitter, platforms.instagram, platforms.linkedin],
-          backgroundColor: ['#ff4500', '#1da1f2', '#e1306c', '#0a66c2'],
+          backgroundColor: ['#e05326', '#2b7bb9', '#c13584', '#0077b5'],
           borderWidth: 0
         }]
       },
@@ -179,7 +179,7 @@ const DashboardPage = {
         responsive: true,
         maintainAspectRatio: false,
         plugins: {
-          legend: { position: 'bottom', labels: { color: '#9ca3af', font: { family: 'Inter', size: 11 } } }
+          legend: { position: 'bottom', labels: { color: '#6e6b65', font: { family: 'Inter', size: 11 } } }
         }
       }
     });

@@ -129,7 +129,7 @@ const App = {
   },
 
   navigateTo(page, updateHash = true) {
-    if (!['dashboard', 'articles', 'sources', 'queue', 'logs', 'settings'].includes(page)) {
+    if (!['dashboard', 'articles', 'sources', 'queue', 'media', 'logs', 'settings'].includes(page)) {
       page = 'dashboard';
     }
 
@@ -149,8 +149,9 @@ const App = {
       articles: { title: 'Articles Browser', subtitle: 'Manage scraped articles, AI rewrites, and platform status' },
       sources: { title: 'News Sources', subtitle: 'Configured RSS feeds and ScrapeGraphAI web sources' },
       queue: { title: 'Local Queue Viewer', subtitle: 'Prepared content for Instagram and LinkedIn manual posting' },
+      media: { title: 'Media Catalog & Studio', subtitle: 'Visual catalog of Gemini AI generated slides & 1-click posting' },
       logs: { title: 'System Execution Logs', subtitle: 'Live terminal stream from pipeline.log' },
-      settings: { title: 'API Keys & Configuration', subtitle: 'Manage Gemini, Reddit, and Twitter API credentials directly from UI' }
+      settings: { title: 'API Keys & Configuration', subtitle: 'Manage Gemini, Reddit, Twitter, Instagram & LinkedIn credentials' }
     };
 
     const header = pageTitles[page] || pageTitles.dashboard;
@@ -169,6 +170,8 @@ const App = {
       SourcesPage.render(container);
     } else if (page === 'queue' && typeof QueuePage !== 'undefined') {
       QueuePage.render(container);
+    } else if (page === 'media' && typeof MediaPage !== 'undefined') {
+      MediaPage.render(container);
     } else if (page === 'logs' && typeof LogsPage !== 'undefined') {
       LogsPage.render(container);
     } else if (page === 'settings' && typeof SettingsPage !== 'undefined') {

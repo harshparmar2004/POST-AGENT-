@@ -248,6 +248,37 @@ def get_article(article_id: int):
         }
 
 
+@router.post("/articles/{article_id}/publish")
+def publish_single_article(article_id: int):
+    """Publish a single article live across Reddit, Twitter, Instagram, and LinkedIn."""
+    from src.publishers.reddit_publisher import publish_to_reddit
+    from src.publishers.twitter_publisher import tweet_article
+    from src.publishers.instagram_publisher import queue_for_instagram
+    from src.publishers.linkedin_publisher import queue_for_linkedin
+
+    r_ok = publish_to_reddit(article_id)
+    t_ok = tweet_article(article_id)
+    i_ok = queue_for_instagram(article_id)
+    l_ok = queue_for_linkedin(article_id)
+
+    with get_session() as session:
+        a = session.query(Article).filter(Article.id == article_id).first()
+        if a:
+            a.status = "published"
+            session.commit()
+
+    return {
+        "success": True,
+        "message": f"Article {article_id} published across connected APIs!",
+        "results": {
+            "reddit": r_ok,
+            "twitter": t_ok,
+            "instagram": i_ok,
+            "linkedin": l_ok
+        }
+    }
+
+
 @router.delete("/articles/{article_id}")
 def delete_article(article_id: int):
     """Delete an article from database and remove associated image/queue files."""

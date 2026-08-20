@@ -40,35 +40,35 @@ const SourcesPage = {
       }
 
       grid.innerHTML = this.sourcesData.map((s, idx) => `
-        <div class="glass-card source-card" style="position: relative; display: flex; flex-direction: column; justify-content: space-between;">
+        <div class="glass-card source-card" style="position: relative; display: flex; flex-direction: column; justify-content: space-between; padding: 12px 14px;">
           <div>
-            <div class="source-header" style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px;">
-              <h3 style="font-family: var(--font-serif); font-size: 1.15rem; font-weight: 600;">${s.name}</h3>
-              <span class="tier-tag tier-${s.tier}">TIER ${s.tier}</span>
+            <div class="source-header" style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px;">
+              <h3 style="font-family: var(--font-serif); font-size: 0.98rem; font-weight: 600;">${s.name}</h3>
+              <span class="tier-tag tier-${s.tier}" style="font-size: 0.65rem; padding: 2px 6px;">TIER ${s.tier}</span>
             </div>
 
-            <div class="source-meta" style="display: flex; flex-direction: column; gap: 6px; font-size: 0.82rem; color: var(--text-muted);">
-              <div><i data-lucide="folder" style="width: 14px; display: inline; color: var(--primary-purple);"></i> Category: <strong style="color: var(--text-main);">${s.category || 'general'}</strong></div>
-              <div><i data-lucide="message-square" style="width: 14px; display: inline; color: var(--color-reddit);"></i> Subreddit: <strong style="color: var(--text-main);">r/${s.subreddit || 'technology'}</strong></div>
-              <div><i data-lucide="clock" style="width: 14px; display: inline; color: var(--text-muted);"></i> Delay: <strong>${s.delay_seconds}s</strong></div>
+            <div class="source-meta" style="display: flex; flex-direction: column; gap: 4px; font-size: 0.78rem; color: var(--text-muted);">
+              <div><i data-lucide="folder" style="width: 12px; display: inline; color: var(--primary-purple);"></i> Category: <strong style="color: var(--text-main);">${s.category || 'general'}</strong></div>
+              <div><i data-lucide="message-square" style="width: 12px; display: inline; color: var(--color-reddit);"></i> Subreddit: <strong style="color: var(--text-main);">r/${s.subreddit || 'technology'}</strong></div>
+              <div><i data-lucide="clock" style="width: 12px; display: inline; color: var(--text-muted);"></i> Delay: <strong>${s.delay_seconds}s</strong></div>
               
-              <div style="margin-top: 6px; padding: 6px 10px; background: var(--bg-surface); border-radius: 6px; border: 1px solid var(--border-color); font-size: 0.75rem; font-family: var(--font-mono); color: var(--text-muted); word-break: break-all;">
+              <div style="margin-top: 4px; padding: 4px 8px; background: var(--bg-surface); border-radius: 5px; border: 1px solid var(--border-color); font-size: 0.72rem; font-family: var(--font-mono); color: var(--text-muted); word-break: break-all; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
                 ${s.feed_url || s.url}
               </div>
             </div>
           </div>
 
-          <div style="margin-top: 16px; padding-top: 12px; border-top: 1px solid var(--border-color); display: flex; align-items: center; justify-content: space-between;">
-            <div style="font-size: 0.82rem; color: var(--text-muted);">
-              Scraped: <strong style="font-size: 1.05rem; color: var(--primary-purple);">${s.article_count}</strong>
+          <div style="margin-top: 10px; padding-top: 8px; border-top: 1px solid var(--border-color); display: flex; align-items: center; justify-content: space-between;">
+            <div style="font-size: 0.78rem; color: var(--text-muted);">
+              Scraped: <strong style="font-size: 0.95rem; color: var(--primary-purple);">${s.article_count}</strong>
             </div>
             
-            <div style="display: flex; gap: 6px;">
-              <button class="btn btn-secondary" style="padding: 5px 10px; font-size: 0.75rem;" onclick="SourcesPage.openEditModal(${idx})">
-                <i data-lucide="edit-2" style="width: 12px;"></i> Edit
+            <div style="display: flex; gap: 5px;">
+              <button class="btn btn-secondary" style="padding: 3px 8px; font-size: 0.72rem;" onclick="SourcesPage.openEditModal(${idx})">
+                <i data-lucide="edit-2" style="width: 11px;"></i> Edit
               </button>
-              <button class="btn btn-secondary" style="padding: 5px 10px; font-size: 0.75rem; color: var(--status-failed);" onclick="SourcesPage.deleteSource(${idx}, '${s.name}')">
-                <i data-lucide="trash-2" style="width: 12px;"></i> Delete
+              <button class="btn btn-secondary" style="padding: 3px 8px; font-size: 0.72rem; color: var(--status-failed);" onclick="SourcesPage.deleteSource(${idx}, '${s.name}')">
+                <i data-lucide="trash-2" style="width: 11px;"></i> Delete
               </button>
             </div>
           </div>

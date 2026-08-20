@@ -12,9 +12,14 @@ const MediaPage = {
             <h3 style="font-family: var(--font-serif); font-size: 1.3rem;">Media Catalog & Nano Banana Image Studio</h3>
             <p style="font-size: 0.85rem; color: var(--text-muted);">Visual catalog of Nano Banana (Imagen 3) generated slides and rewrites. Click 'Publish Now' to post directly to APIs.</p>
           </div>
-          <button class="btn btn-secondary" onclick="MediaPage.loadMediaCatalog()">
-            <i data-lucide="refresh-cw"></i> Refresh Catalog
-          </button>
+          <div style="display: flex; gap: 10px;">
+            <button class="btn btn-secondary" onclick="MediaPage.loadMediaCatalog()">
+              <i data-lucide="refresh-cw"></i> Refresh Catalog
+            </button>
+            <button class="btn btn-primary btn-glow" onclick="App.triggerPipeline()">
+              <i data-lucide="sparkles"></i> Run Image Studio Generator
+            </button>
+          </div>
         </div>
 
         <!-- Nano Banana & Carousel Settings Control Card -->
@@ -80,38 +85,45 @@ const MediaPage = {
       const data = await App.fetchApi('/api/articles?limit=50');
       const articles = data.articles;
 
-      const mediaArticles = articles.filter(a => a.image_url || a.status === 'ready' || a.status === 'published');
-
-      if (!mediaArticles || mediaArticles.length === 0) {
-        grid.innerHTML = '<div class="glass-card"><p>No generated media catalog found. Click "Run Pipeline" to generate images!</p></div>';
+      if (!articles || articles.length === 0) {
+        grid.innerHTML = `
+          <div class="glass-card" style="grid-column: 1 / -1; text-align: center; padding: 40px;">
+            <i data-lucide="image" style="width: 48px; height: 48px; color: var(--primary-purple); margin-bottom: 12px;"></i>
+            <h4 style="font-family: var(--font-serif); font-size: 1.2rem; margin-bottom: 6px;">No Scraped Articles Found</h4>
+            <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 16px;">Click "Run Image Studio Generator" above to fetch news and build Nano Banana slide images!</p>
+            <button class="btn btn-primary btn-glow" onclick="App.triggerPipeline()">
+              <i data-lucide="play"></i> Start Pipeline Now
+            </button>
+          </div>
+        `;
+        if (window.lucide) window.lucide.createIcons();
         return;
       }
 
-      grid.innerHTML = mediaArticles.map(a => `
-        <div class="glass-card queue-card" style="position: relative;">
-          <div class="queue-img-wrapper" style="height: 200px;">
-            <img src="${a.image_url || '/api/placeholder/400/220'}" alt="${a.title}" onerror="this.src='https://images.unsplash.com/photo-1504711434969-e33886168f5c?w=600&auto=format&fit=crop&q=60'" />
-          </div>
-
+      grid.innerHTML = articles.map(a => `
+        <div class="glass-card queue-card" style="position: relative; display: flex; flex-direction: column; justify-content: space-between;">
           <div>
-            <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 6px;">
-              <span class="badge" style="background: rgba(31,30,27,0.06); color: var(--text-main); font-size: 0.7rem;">${a.source}</span>
-              <span class="badge badge-${a.status}">${a.status}</span>
+            <div class="queue-img-wrapper" style="height: 200px; position: relative;">
+              <img src="${a.image_url || '/api/placeholder/400/220'}" alt="${a.title}" onerror="this.src='https://images.unsplash.com/photo-1504711434969-e33886168f5c?w=600&auto=format&fit=crop&q=60'" />
+              ${!a.image_url ? '<div style="position: absolute; inset: 0; background: rgba(0,0,0,0.45); display: flex; align-items: center; justify-content: center; color: white; font-weight: 600; font-size: 0.85rem;">🎨 Click "Generate Image"</div>' : ''}
             </div>
-            <h4 style="font-family: var(--font-serif); font-size: 1.05rem; font-weight: 600; line-height: 1.3;">${a.title}</h4>
+
+            <div style="margin-top: 12px;">
+              <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 6px;">
+                <span class="badge" style="background: rgba(31,30,27,0.06); color: var(--text-main); font-size: 0.7rem;">${a.source}</span>
+                <span class="badge badge-${a.status}">${a.status}</span>
+              </div>
+              <h4 style="font-family: var(--font-serif); font-size: 1.05rem; font-weight: 600; line-height: 1.3; margin-bottom: 8px;">${a.title}</h4>
+              <p style="font-size: 0.76rem; color: var(--text-muted);">Scraped: ${App.formatTimestamp(a.scraped_at)}</p>
+            </div>
           </div>
 
-          <div class="queue-content-text" style="font-size: 0.8rem; height: 90px; overflow-y: auto;">
-            <strong>Instagram Caption:</strong> ${a.ai_content.instagram_caption || a.title}<br/><br/>
-            <strong>Twitter Tweet:</strong> ${a.ai_content.twitter_text || a.title}
-          </div>
-
-          <div style="display: flex; gap: 8px; margin-top: 6px;">
-            <button class="btn btn-secondary" style="flex: 1; font-size: 0.78rem; padding: 7px 10px;" onclick="App.openArticleModal(${a.id})">
-              <i data-lucide="eye" style="width: 14px;"></i> Preview All Slides
+          <div style="display: flex; gap: 8px; margin-top: 14px;">
+            <button class="btn btn-secondary" style="flex: 1; font-size: 0.78rem; padding: 8px 10px;" onclick="App.openArticleModal(${a.id})">
+              <i data-lucide="eye" style="width: 14px;"></i> View Details
             </button>
 
-            <button class="btn btn-primary btn-glow" style="flex: 1.2; font-size: 0.78rem; padding: 7px 10px;" onclick="MediaPage.publishToAllApis(${a.id})">
+            <button class="btn btn-primary btn-glow" style="flex: 1.2; font-size: 0.78rem; padding: 8px 10px;" onclick="MediaPage.publishToAllApis(${a.id})">
               <i data-lucide="send" style="width: 14px;"></i> 🚀 Publish Now
             </button>
           </div>

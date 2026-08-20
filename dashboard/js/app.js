@@ -242,6 +242,13 @@ const App = {
         }
         this.pipelineRunning = false;
         if (dot) dot.className = 'dot-pulse green';
+        if (text) text.textContent = data.last_run ? `Last run: ${new Date(data.last_run).toLocaleTimeString()}` : 'Idle (Ready)';
+      }
+    } catch (e) {
+      console.warn("Status check failed", e);
+    }
+  },
+
   formatTimestamp(dateStr) {
     if (!dateStr) return 'N/A';
     try {
@@ -330,19 +337,29 @@ const App = {
   },
 
   showToast(message, type = 'info') {
-    const container = document.getElementById('toast-container');
-    if (!container) return;
-
     const toast = document.createElement('div');
     toast.className = `toast toast-${type}`;
-    toast.textContent = message;
+    toast.style.cssText = `
+      position: fixed; bottom: 20px; right: 20px; z-index: 9999;
+      background: var(--bg-card); border: 1px solid var(--border-color);
+      padding: 12px 20px; border-radius: 8px; font-size: 0.85rem; font-weight: 500;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.15); transition: all 0.3s ease;
+      display: flex; align-items: center; gap: 8px; color: var(--text-main);
+    `;
 
-    container.appendChild(toast);
+    const icon = type === 'success' ? 'check-circle' : type === 'error' ? 'alert-triangle' : 'info';
+    toast.innerHTML = `<i data-lucide="${icon}" style="width: 16px;"></i> ${message}`;
+
+    document.body.appendChild(toast);
+    if (window.lucide) window.lucide.createIcons();
 
     setTimeout(() => {
-      toast.remove();
+      toast.style.opacity = '0';
+      toast.style.transform = 'translateY(10px)';
+      setTimeout(() => toast.remove(), 300);
     }, 4000);
   }
 };
 
-window.addEventListener('DOMContentLoaded', () => App.init());
+// Initialize App on DOM load
+document.addEventListener('DOMContentLoaded', () => App.init());

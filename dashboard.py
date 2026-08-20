@@ -69,8 +69,8 @@ def parse_args():
 if __name__ == "__main__":
     args = parse_args()
     print("=" * 60)
-    print(" 🚀 NEWSFLOW DASHBOARD SERVER STARTED")
-    print(f" 🌐 Dashboard Web UI: http://{args.host}:{args.port}")
-    print(f" 📚 API Documentation: http://{args.host}:{args.port}/docs")
+    print("  NEWSFLOW DASHBOARD SERVER STARTED")
+    print(f"  Dashboard Web UI: http://{args.host}:{args.port}")
+    print(f"  API Documentation: http://{args.host}:{args.port}/docs")
     print("=" * 60)
     uvicorn.run("dashboard:app", host=args.host, port=args.port, reload=args.reload)

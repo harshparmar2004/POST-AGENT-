@@ -242,10 +242,16 @@ const App = {
         }
         this.pipelineRunning = false;
         if (dot) dot.className = 'dot-pulse green';
-        if (text) text.textContent = data.last_run ? `Last run: ${new Date(data.last_run).toLocaleTimeString()}` : 'Idle (Ready)';
-      }
+  formatTimestamp(dateStr) {
+    if (!dateStr) return 'N/A';
+    try {
+      const d = new Date(dateStr);
+      if (isNaN(d.getTime())) return dateStr;
+      return d.toLocaleDateString(undefined, {
+        year: 'numeric', month: 'short', day: 'numeric'
+      }) + ' at ' + d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
     } catch (e) {
-      console.warn("Status check failed", e);
+      return dateStr;
     }
   },
 
@@ -263,7 +269,7 @@ const App = {
       const data = await this.fetchApi(`/api/articles/${articleId}`);
       
       title.textContent = data.title;
-      meta.textContent = `${data.source} • Category: ${data.category || 'General'} • Subreddit: r/${data.subreddit || 'technology'}`;
+      meta.textContent = `${data.source} • Scraped: ${this.formatTimestamp(data.scraped_at)} • Category: ${data.category || 'General'}`;
       badge.textContent = data.status;
       badge.className = `badge badge-${data.status.toLowerCase()}`;
 

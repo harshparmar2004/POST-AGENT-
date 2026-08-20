@@ -141,7 +141,7 @@ const ArticlesPage = {
             </div>
           </td>
           <td style="color: var(--text-muted); font-size: 0.8rem;" onclick="App.openArticleModal(${a.id})">
-            ${a.scraped_at ? new Date(a.scraped_at).toLocaleDateString() : 'N/A'}
+            ${App.formatTimestamp(a.scraped_at)}
           </td>
           <td>
             <button class="btn-icon" style="color: var(--status-failed);" onclick="ArticlesPage.deleteArticle(${a.id}, event)" title="Delete Article">

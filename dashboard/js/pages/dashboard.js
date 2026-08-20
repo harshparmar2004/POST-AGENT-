@@ -304,7 +304,7 @@ const DashboardPage = {
           </div>
         </td>
         <td style="color: var(--text-muted); font-size: 0.8rem;">
-          ${a.scraped_at ? new Date(a.scraped_at).toLocaleTimeString() : 'N/A'}
+          ${App.formatTimestamp(a.scraped_at)}
         </td>
       </tr>
     `).join('');

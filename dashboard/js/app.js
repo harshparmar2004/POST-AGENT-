@@ -222,12 +222,21 @@ const App = {
 
   async stopPipeline() {
     try {
-      const res = await this.fetchApi('/api/pipeline/stop', { method: 'POST' });
-      this.showToast(res.message || 'Pipeline execution stopped!', 'info');
+      const res = await fetch('/api/pipeline/stop', { method: 'POST' });
+      if (res.status === 405 || res.status === 404) {
+        this.showToast('Server update needed: Please restart "python dashboard.py" in your terminal window once!', 'warning');
+        this.pipelineRunning = false;
+        this.updatePipelineButtonState();
+        return;
+      }
+      const data = await res.json();
+      this.showToast(data.message || 'Pipeline execution stopped!', 'info');
       this.pipelineRunning = false;
       this.updatePipelineButtonState();
     } catch (err) {
-      this.showToast(`Failed to stop pipeline: ${err.message}`, 'error');
+      this.showToast(`Stop request: ${err.message}`, 'error');
+      this.pipelineRunning = false;
+      this.updatePipelineButtonState();
     }
   },
 

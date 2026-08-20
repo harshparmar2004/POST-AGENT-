@@ -279,11 +279,29 @@ const App = {
   formatTimestamp(dateStr) {
     if (!dateStr) return 'N/A';
     try {
-      const d = new Date(dateStr);
+      let formattedStr = dateStr;
+      if (typeof dateStr === 'string' && !dateStr.endsWith('Z') && !dateStr.includes('+')) {
+        formattedStr += 'Z';
+      }
+      const d = new Date(formattedStr);
       if (isNaN(d.getTime())) return dateStr;
-      return d.toLocaleDateString(undefined, {
-        year: 'numeric', month: 'short', day: 'numeric'
-      }) + ' at ' + d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+
+      const datePart = d.toLocaleDateString('en-IN', {
+        timeZone: 'Asia/Kolkata',
+        year: 'numeric',
+        month: 'short',
+        day: 'numeric'
+      });
+
+      const timePart = d.toLocaleTimeString('en-IN', {
+        timeZone: 'Asia/Kolkata',
+        hour: '2-digit',
+        minute: '2-digit',
+        second: '2-digit',
+        hour12: true
+      });
+
+      return `${datePart} at ${timePart} IST`;
     } catch (e) {
       return dateStr;
     }

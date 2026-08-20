@@ -85,14 +85,21 @@ def scrape_html(source: Dict[str, Any]) -> List[Dict[str, Any]]:
 
             if not body or not body.strip():
                 logger.debug(f"Trafilatura failed or empty for {url}, falling back to newspaper3k.")
-                np_article = NewspaperArticle(url)
-                np_article.download()
-                np_article.parse()
-                body = np_article.text
-                if not title:
-                    title = np_article.title
-                if not author and np_article.authors:
-                    author = ", ".join(np_article.authors)
+                try:
+                    np_article = NewspaperArticle(url)
+                    if downloaded:
+                        np_article.set_html(downloaded)
+                        np_article.parse()
+                    else:
+                        np_article.download()
+                        np_article.parse()
+                    body = np_article.text
+                    if not title:
+                        title = np_article.title
+                    if not author and np_article.authors:
+                        author = ", ".join(np_article.authors)
+                except Exception as npe:
+                    logger.debug(f"Newspaper3k fallback failed for {url}: {npe}")
             
             if not body or not body.strip():
                 logger.warning(f"Could not extract body text for {url}, skipping.")

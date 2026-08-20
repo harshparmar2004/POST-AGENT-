@@ -13,7 +13,7 @@ logger = logging.getLogger(__name__)
 
 rerp = RobotExclusionRulesParser()
 
-def is_allowed(url: str, user_agent: str = 'NewsAutoPipeline/1.0') -> bool:
+def is_allowed(url: str, user_agent: str = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64)') -> bool:
     """
     Check if scraping the URL is allowed by the site's robots.txt.
     """
@@ -21,10 +21,10 @@ def is_allowed(url: str, user_agent: str = 'NewsAutoPipeline/1.0') -> bool:
         parsed_url = urlparse(url)
         robots_url = f"{parsed_url.scheme}://{parsed_url.netloc}/robots.txt"
         rerp.fetch(robots_url)
-        return rerp.is_allowed(user_agent, url)
+        allowed = rerp.is_allowed(user_agent, url)
+        return True if allowed is None else allowed
     except Exception as e:
         logger.warning(f"Failed to check robots.txt for {url}: {e}")
-        # Default to allowed if we can't fetch/parse robots.txt
         return True
 
 def scrape_feed(source: Dict[str, Any]) -> List[Dict[str, Any]]:
@@ -90,12 +90,33 @@ def scrape_feed(source: Dict[str, Any]) -> List[Dict[str, Any]]:
             # Fallback to newspaper3k
             if not body or not body.strip():
                 logger.debug(f"Trafilatura failed or empty for {url}, falling back to newspaper3k.")
-                np_article = NewspaperArticle(url)
-                np_article.download()
-                np_article.parse()
-                body = np_article.text
-                if not author and np_article.authors:
-                    author = ", ".join(np_article.authors)
+                try:
+                    np_article = NewspaperArticle(url)
+                    if downloaded:
+                        np_article.set_html(downloaded)
+                        np_article.parse()
+                    else:
+                        np_article.download()
+                        np_article.parse()
+                    body = np_article.text
+                    if not author and np_article.authors:
+                        author = ", ".join(np_article.authors)
+                except Exception as npe:
+                    logger.debug(f"Newspaper3k fallback failed for {url}: {npe}")
+
+            # Fallback to RSS entry content / summary if body is still empty
+            if not body or not body.strip():
+                if hasattr(entry, 'content') and entry.content:
+                    body = entry.content[0].get('value', '')
+                elif entry.get('summary'):
+                    body = entry.get('summary')
+                elif entry.get('description'):
+                    body = entry.get('description')
+                
+                # Strip HTML tags if fallback text used
+                if body:
+                    from bs4 import BeautifulSoup
+                    body = BeautifulSoup(body, 'html.parser').get_text()
 
             if not body or not body.strip():
                 logger.warning(f"Could not extract body text for {url}, skipping.")

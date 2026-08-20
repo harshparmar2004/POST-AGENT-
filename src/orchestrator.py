@@ -107,6 +107,39 @@ def stage_scrape(sources: list[dict], max_articles: int | None = None) -> int:
     return total_new
 
 
+def stage_rank(max_articles: int | None = None) -> int:
+    """Stage 2: AI Agent News Ranking & Scoring (1-100)."""
+    logger.info("=" * 60)
+    logger.info("STAGE 2: AI AGENT NEWS RANKING & FILTERING (1-100)")
+    logger.info("=" * 60)
+
+    from src.ai.ranker import rank_article
+
+    with get_session() as session:
+        articles = session.query(Article).all()
+        article_ids = [a.id for a in articles]
+
+    if max_articles is not None:
+        article_ids = article_ids[:max_articles]
+
+    logger.info(f"Ranking {len(article_ids)} articles using AI Ranking Prompt...")
+    ranked_count = 0
+
+    for aid in article_ids:
+        if is_abort_requested():
+            logger.warning("Stage 2 AI Ranking aborted by user.")
+            break
+
+        try:
+            if rank_article(aid):
+                ranked_count += 1
+        except Exception as e:
+            logger.error(f"Failed to rank article #{aid}: {e}")
+
+    logger.info(f"Stage 2 complete: {ranked_count}/{len(article_ids)} articles ranked with scores 1-100")
+    return ranked_count
+
+
 def stage_rewrite(max_articles: int | None = None) -> int:
     """Stage 2: Rewrite pending articles using active LLM."""
     logger.info("=" * 60)
@@ -223,6 +256,7 @@ def run_pipeline(max_articles: int | None = None):
     sources = load_sources()
 
     new_articles = stage_scrape(sources, max_articles)
+    ranked_count = stage_rank(max_articles)
     rewritten = stage_rewrite(max_articles)
     images = stage_image_gen(max_articles)
     publish_results = stage_publish()

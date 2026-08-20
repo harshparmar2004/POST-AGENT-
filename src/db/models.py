@@ -74,6 +74,10 @@ class Article(Base):
     #   queued   → saved to local queue folders
     #   failed   → something went wrong (check logs)
 
+    # --- AI Ranking & Relevance Scoring (Pillar 2) ---
+    rank_score: Mapped[int | None] = mapped_column(Integer, default=75)            # Score 1-100
+    rank_reason: Mapped[str | None] = mapped_column(Text, nullable=True)           # AI ranking evaluation
+
     category: Mapped[str | None] = mapped_column(String(50), nullable=True)
     subreddit: Mapped[str | None] = mapped_column(String(100), nullable=True)
 

@@ -136,7 +136,7 @@ const App = {
   },
 
   navigateTo(page, updateHash = true) {
-    if (!['dashboard', 'articles', 'sources', 'queue', 'media', 'pipeline', 'logs', 'settings'].includes(page)) {
+    if (!['dashboard', 'articles', 'sources', 'ranking', 'queue', 'media', 'pipeline', 'logs', 'settings'].includes(page)) {
       page = 'dashboard';
     }
 
@@ -150,10 +150,11 @@ const App = {
     });
 
     const pageTitles = {
-      dashboard: { title: 'Dashboard Overview', subtitle: 'Real-time 3-pillar content automation analytics and live system status' },
-      sources: { title: 'Pillar 1: News Ingestion & Scrapers', subtitle: 'Manage news source links, RSS feeds, and trigger automated crawlers' },
-      media: { title: 'Pillar 2: Nano Banana MCP Studio & AI Rewriter', subtitle: 'Custom AI prompt sandbox, style presets, and 1080x1080 slide deck studio' },
-      queue: { title: 'Pillar 3: Local Queue & Multi-API Dispatch', subtitle: 'Prepared post bundles for 1-click publishing to Instagram, LinkedIn, Twitter & Reddit' },
+      dashboard: { title: 'Dashboard Overview', subtitle: 'Real-time 4-pillar content automation analytics and live system status' },
+      sources: { title: 'Pillar 1: News Ingestion & Web Scrapers', subtitle: 'Manage news source links, RSS feeds, and trigger automated crawlers' },
+      ranking: { title: 'Pillar 2: AI News Agent Ranking & Filter', subtitle: 'Scores news from 1 to 100 based on custom AI Ranking Rules and viral potential' },
+      media: { title: 'Pillar 3: Nano Banana MCP Studio & AI Rewriter', subtitle: 'Custom AI prompt sandbox, style presets, and 1080x1080 slide deck studio' },
+      queue: { title: 'Pillar 4: Local Queue & Multi-API Dispatch', subtitle: 'Prepared post bundles for 1-click publishing to Instagram, LinkedIn, Twitter & Reddit' },
       articles: { title: 'Articles Vault', subtitle: 'Database of all scraped articles, AI rewrites, and platform status' },
       pipeline: { title: 'Pipeline Workflow', subtitle: 'n8n-style agentic workflow node visualizer & live content progression' },
       logs: { title: 'System Logs Stream', subtitle: 'Live terminal stream from pipeline.log' },
@@ -173,6 +174,8 @@ const App = {
       ArticlesPage.render(container);
     } else if (page === 'sources' && typeof SourcesPage !== 'undefined') {
       SourcesPage.render(container);
+    } else if (page === 'ranking' && typeof RankingPage !== 'undefined') {
+      RankingPage.render(container);
     } else if (page === 'queue' && typeof QueuePage !== 'undefined') {
       QueuePage.render(container);
     } else if (page === 'media' && typeof MediaPage !== 'undefined') {

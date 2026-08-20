@@ -31,11 +31,18 @@ def setup_logging() -> None:
     root_logger = logging.getLogger()
     root_logger.setLevel(logging.DEBUG)
 
+    # Ensure sys.stdout handles UTF-8 on Windows
+    if hasattr(sys.stdout, "reconfigure"):
+        try:
+            sys.stdout.reconfigure(encoding="utf-8", errors="replace")
+        except Exception:
+            pass
+
     # Console handler — INFO and above
     console_handler = logging.StreamHandler(sys.stdout)
     console_handler.setLevel(logging.INFO)
     console_fmt = logging.Formatter(
-        "%(asctime)s │ %(levelname)-7s │ %(name)s │ %(message)s",
+        "%(asctime)s | %(levelname)-7s | %(name)s | %(message)s",
         datefmt="%H:%M:%S",
     )
     console_handler.setFormatter(console_fmt)
@@ -44,7 +51,7 @@ def setup_logging() -> None:
     file_handler = logging.FileHandler(str(log_file), encoding="utf-8")
     file_handler.setLevel(logging.DEBUG)
     file_fmt = logging.Formatter(
-        "%(asctime)s │ %(levelname)-7s │ %(name)s │ %(funcName)s:%(lineno)d │ %(message)s",
+        "%(asctime)s | %(levelname)-7s | %(name)s | %(funcName)s:%(lineno)d | %(message)s",
         datefmt="%Y-%m-%d %H:%M:%S",
     )
     file_handler.setFormatter(file_fmt)
@@ -94,18 +101,24 @@ def check_env() -> None:
 
     if not found_llm:
         logger.warning("No LLM API Key found in .env! (Set GROQ_API_KEY, OPENAI_API_KEY, ANTHROPIC_API_KEY, or GOOGLE_API_KEY)")
-        logger.warning("Copy .env.example to .env or configure keys in the Dashboard UI at http://localhost:8000/#settings")
+        logger.warning("Configure keys in the Dashboard UI at http://localhost:8000/#settings")
 
-    # Check optional keys (warn but don't exit)
+    optional = {
+        "REDDIT_CLIENT_ID": "Reddit live posting",
+        "TWITTER_API_KEY": "Twitter live posting",
+        "INSTAGRAM_ACCESS_TOKEN": "Instagram live posting",
+        "LINKEDIN_ACCESS_TOKEN": "LinkedIn live posting",
+    }
+
     missing_optional = []
     for key, purpose in optional.items():
         if not os.getenv(key):
             missing_optional.append(f"  {key} ({purpose})")
 
     if missing_optional:
-        logger.warning("Missing optional credentials (those platforms will be skipped):")
+        logger.info("Optional credentials missing (will queue locally until added):")
         for m in missing_optional:
-            logger.warning(m)
+            logger.info(m)
 
 
 def main() -> None:

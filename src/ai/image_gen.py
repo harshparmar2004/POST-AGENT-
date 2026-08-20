@@ -91,8 +91,7 @@ def generate_image(article_id: int) -> bool:
             _create_pil_slide_card(article, niche, image_path)
 
         article.image_path = image_path
-        if article.twitter_text and article.image_path:
-            article.status = 'ready'
+        article.status = 'ready'
 
         session.commit()
         logger.info(f"Image successfully assigned to Article #{article_id} at {image_path}")
@@ -108,8 +107,8 @@ def _create_pil_slide_card(article: Article, niche: str, output_path: str):
 
     # Draw Header & Category Pill
     draw.rectangle([60, 60, 1020, 1020], outline='#e5e0d8', width=3)
-    draw.rectangle([100, 100, 320, 145], fill='#d97757')
-    draw.text((120, 112), f"niche: {niche[:16].upper()}", fill='#ffffff')
+    draw.rectangle([100, 100, 340, 145], fill='#d97757')
+    draw.text((115, 112), f"NICHE: {niche[:16].upper()}", fill='#ffffff')
 
     # Draw Title Text
     words = article.title.split()
@@ -117,7 +116,7 @@ def _create_pil_slide_card(article: Article, niche: str, output_path: str):
     current_line = []
     for w in words:
         current_line.append(w)
-        if len(' '.join(current_line)) > 28:
+        if len(' '.join(current_line)) > 26:
             lines.append(' '.join(current_line[:-1]))
             current_line = [w]
     if current_line:
@@ -126,12 +125,12 @@ def _create_pil_slide_card(article: Article, niche: str, output_path: str):
     y = 220
     for line in lines[:4]:
         draw.text((100, y), line, fill='#1f1e1b')
-        y += 70
+        y += 65
 
     # Body snippet
     if article.body:
-        snippet = article.body[:220] + "..."
-        draw.text((100, y + 40), snippet, fill='#6e6b65')
+        snippet = article.body[:200] + "..."
+        draw.text((100, y + 30), snippet, fill='#6e6b65')
 
     # Footer Branding
     draw.line([(100, 960), (980, 960)], fill='#d97757', width=2)
@@ -140,12 +139,11 @@ def _create_pil_slide_card(article: Article, niche: str, output_path: str):
     img.save(output_path)
 
 
-def generate_all_images(delay_seconds: float = 2.0) -> int:
+def generate_all_images(delay_seconds: float = 1.0) -> int:
     """Finds articles needing images and processes them."""
     count = 0
     with get_session() as session:
         articles = session.query(Article).filter(
-            Article.twitter_text.isnot(None),
             Article.image_path.is_(None)
         ).all()
         article_ids = [a.id for a in articles]

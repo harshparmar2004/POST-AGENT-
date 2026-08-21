@@ -54,26 +54,43 @@ def generate_image(article_id: int) -> bool:
                 client = genai.Client(api_key=api_key)
                 logger.info(f"Generating image for Article #{article_id} using Nano Banana / Imagen 3 ({image_model})...")
 
-                # Try Imagen 3 / Gemini 2.0 Flash Image generation
-                for model_candidate in [image_model, 'gemini-2.0-flash-exp', 'imagen-3.0-fast-generate-001', 'gemini-2.0-flash-preview-image-generation']:
-                    try:
-                        resp = client.models.generate_content(
-                            model=model_candidate,
-                            contents=prompt,
-                            config=types.GenerateContentConfig(
-                                response_modalities=['IMAGE', 'TEXT']
-                            )
+                # Try Imagen 3 Image Generation API first
+                try:
+                    result = client.models.generate_images(
+                        model=image_model,
+                        prompt=prompt,
+                        config=types.GenerateImagesConfig(
+                            number_of_images=1,
+                            aspect_ratio="1:1"
                         )
-                        if resp.candidates and resp.candidates[0].content and resp.candidates[0].content.parts:
-                            for part in resp.candidates[0].content.parts:
-                                if part.inline_data:
-                                    image_bytes = part.inline_data.data
-                                    break
-                        if image_bytes:
-                            logger.info(f"Successfully generated Nano Banana image using model '{model_candidate}'!")
-                            break
-                    except Exception as model_err:
-                        logger.debug(f"Model candidate '{model_candidate}' failed: {model_err}")
+                    )
+                    if result.generated_images:
+                        image_bytes = result.generated_images[0].image.image_bytes
+                        logger.info(f"Successfully generated Nano Banana image using Imagen 3 model '{image_model}'!")
+                except Exception as img_err:
+                    logger.warning(f"Imagen 3 generate_images call failed: {img_err}")
+
+                # Try Gemini Multimodal Flash fallback if needed
+                if not image_bytes:
+                    for model_candidate in ['gemini-2.0-flash-exp', 'gemini-2.0-flash-preview-image-generation']:
+                        try:
+                            resp = client.models.generate_content(
+                                model=model_candidate,
+                                contents=prompt,
+                                config=types.GenerateContentConfig(
+                                    response_modalities=['IMAGE', 'TEXT']
+                                )
+                            )
+                            if resp.candidates and resp.candidates[0].content and resp.candidates[0].content.parts:
+                                for part in resp.candidates[0].content.parts:
+                                    if part.inline_data:
+                                        image_bytes = part.inline_data.data
+                                        break
+                            if image_bytes:
+                                logger.info(f"Successfully generated Nano Banana image using model '{model_candidate}'!")
+                                break
+                        except Exception as model_err:
+                            logger.debug(f"Model candidate '{model_candidate}' failed: {model_err}")
 
             except Exception as ex:
                 logger.warning(f"Nano Banana API generation failed: {ex}. Using PIL Graphic fallback.")

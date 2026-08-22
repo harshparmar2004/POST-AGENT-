@@ -69,15 +69,23 @@ def rank_article(article_id: int) -> bool:
         # Heuristic NLP Fallback score calculation if LLM call is offline
         else:
             clean_t = article.title.lower()
-            if any(k in clean_t for k in ["ai", "gpus", "breakthrough", "launch", "funding", "robot", "nvidia", "openai", "google"]):
-                score = 88
-                reason = "Contains high-priority trending tech keywords."
-            elif any(k in clean_t for k in ["deal", "freebie", "discount", "bug"]):
-                score = 62
-                reason = "Minor promo/bug deal news story."
+            base_score = 70 + (article_id * 17) % 25  # Gives a unique baseline score between 70 and 95
+
+            high_viral_keywords = ["ai", "gpus", "breakthrough", "launch", "funding", "robot", "nvidia", "openai", "google", "stripe", "openrouter", "waymo", "apple", "camera", "fold", "chip", "quantum", "meta"]
+            low_priority_keywords = ["deal", "freebie", "discount", "bug", "sale", "wallpaper", "case"]
+
+            matched_high = [k for k in high_viral_keywords if k in clean_t]
+            matched_low = [k for k in low_priority_keywords if k in clean_t]
+
+            if matched_high:
+                score = min(98, base_score + len(matched_high) * 4)
+                reason = f"High viral score: covers trending topic ({', '.join(matched_high[:2]).upper()}) from {article.source or 'top tech feed'}."
+            elif matched_low:
+                score = max(42, 60 - len(matched_low) * 5)
+                reason = f"Lower priority: contains app deal/minor update keywords ({', '.join(matched_low[:2])})."
             else:
-                score = 75
-                reason = "Standard niche technology news item."
+                score = base_score
+                reason = f"Standard coverage: relevant topic from {article.source or 'scraped news source'}."
 
         article.rank_score = max(1, min(100, score))
         article.rank_reason = reason

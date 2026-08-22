@@ -136,7 +136,7 @@ const App = {
   },
 
   navigateTo(page, updateHash = true) {
-    if (!['dashboard', 'articles', 'sources', 'ranking', 'queue', 'media', 'pipeline', 'logs', 'settings'].includes(page)) {
+    if (!['space', 'dashboard', 'articles', 'sources', 'ranking', 'queue', 'media', 'pipeline', 'logs', 'settings'].includes(page)) {
       page = 'dashboard';
     }
 

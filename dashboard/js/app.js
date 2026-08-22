@@ -136,7 +136,7 @@ const App = {
   },
 
   navigateTo(page, updateHash = true) {
-    if (!['space', 'dashboard', 'articles', 'sources', 'ranking', 'queue', 'media', 'pipeline', 'logs', 'settings'].includes(page)) {
+    if (!['scraped', 'space', 'dashboard', 'articles', 'sources', 'ranking', 'queue', 'media', 'pipeline', 'logs', 'settings'].includes(page)) {
       page = 'dashboard';
     }
 
@@ -150,6 +150,7 @@ const App = {
     });
 
     const pageTitles = {
+      scraped: { title: '📦 Raw Scraped Data Vault', subtitle: 'View all raw content, headlines, and text scraped directly from website feeds' },
       space: { title: '🌌 3D Interactive Agentic Space', subtitle: 'Observe, prompt, and execute the end-to-end AI content automation pipeline in 3D' },
       dashboard: { title: 'Dashboard Overview', subtitle: 'Real-time 4-pillar content automation analytics and live system status' },
       sources: { title: 'Pillar 1: News Ingestion & Web Scrapers', subtitle: 'Manage news source links, RSS feeds, and trigger automated crawlers' },
@@ -169,7 +170,9 @@ const App = {
     const container = document.getElementById('page-container');
     container.innerHTML = '<div class="glass-card"><p>Loading page content...</p></div>';
 
-    if (page === 'space' && typeof SpacePage !== 'undefined') {
+    if (page === 'scraped' && typeof ScrapedPage !== 'undefined') {
+      ScrapedPage.render(container);
+    } else if (page === 'space' && typeof SpacePage !== 'undefined') {
       SpacePage.render(container);
     } else if (page === 'dashboard' && typeof DashboardPage !== 'undefined') {
       DashboardPage.render(container);

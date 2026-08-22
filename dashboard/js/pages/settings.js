@@ -111,6 +111,42 @@ const SettingsPage = {
           </div>
         </div>
 
+        <!-- Nano Banana Image & 4-Slide Deck Settings -->
+        <div class="glass-card" style="border: 1px solid #a855f7;">
+          <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px;">
+            <div style="display: flex; align-items: center; gap: 12px;">
+              <div class="stat-icon" style="color: #a855f7; background: rgba(168, 85, 247, 0.12); width: 40px; height: 40px; border-radius: 8px;">
+                <i data-lucide="image"></i>
+              </div>
+              <div>
+                <h3 style="font-family: var(--font-serif); font-size: 1.15rem;">🍌 Nano Banana 4-Slide Deck & Aspect Ratio Settings</h3>
+                <p style="font-size: 0.82rem; color: var(--text-muted);">Configure automatic 4-card image decks (1 Attracting Banner + 3 Context/Concept Details) & ratio</p>
+              </div>
+            </div>
+            <span class="badge" style="font-size: 0.7rem; background: rgba(168, 85, 247, 0.15); color: #a855f7;">NANO BANANA</span>
+          </div>
+
+          <div style="display: flex; flex-direction: column; gap: 16px;">
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
+              <div>
+                <label style="font-size: 0.84rem; font-weight: 600;">DEFAULT_ASPECT_RATIO</label>
+                <select id="input-DEFAULT_ASPECT_RATIO" class="filter-select" style="width: 100%; margin-top: 4px;">
+                  <option value="16:9" selected>16:9 Widescreen (Twitter, Reddit, LinkedIn - Recommended)</option>
+                  <option value="4:5">4:5 Mobile Portrait (Instagram Feed & Mobile)</option>
+                  <option value="1:1">1:1 Square (Classic Social Grid)</option>
+                </select>
+                <span style="font-size: 0.74rem; color: var(--text-muted); margin-top: 4px; display: block;">Twitter, Reddit & LinkedIn perform best with 16:9 widescreen visuals!</span>
+              </div>
+
+              <div>
+                <label style="font-size: 0.84rem; font-weight: 600;">4-SLIDE DECK SEQUENCE</label>
+                <input type="text" id="input-SLIDE_STRUCTURE" class="filter-select" value="1 Banner (Attract Hook) + 3 Concept/Context Breakdown Cards" readonly style="width: 100%; margin-top: 4px; background: var(--bg-surface);" />
+                <span style="font-size: 0.74rem; color: var(--text-muted); margin-top: 4px; display: block;">Slide 1: High-impact Title Banner Hook ➔ Slides 2-4: Deep concept visualization & context.</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
         <!-- Step 2: Instagram Graph API -->
         <div class="glass-card">
           <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px;">

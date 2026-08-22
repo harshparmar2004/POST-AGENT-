@@ -162,51 +162,62 @@ def generate_carousel_slides(article_id: int) -> list[str]:
 
 def _create_pil_slide_card(article: Article, niche: str, output_path: str, slide_type: str = "Banner Title Card", slide_num: int = 1):
     """
-    Renders a high-resolution 1080x1080 social media slide card using PIL.
+    Renders high-resolution social media slide card using PIL according to configured aspect ratio (16:9, 4:5, 1:1).
     """
-    img = Image.new('RGB', (1080, 1080), color='#faf7f2')
+    ratio = os.getenv('DEFAULT_ASPECT_RATIO', '16:9').strip()
+
+    if ratio == '16:9':
+        width, height = 1920, 1080
+    elif ratio == '4:5':
+        width, height = 1080, 1350
+    else:
+        width, height = 1080, 1080
+
+    img = Image.new('RGB', (width, height), color='#faf7f2')
     draw = ImageDraw.Draw(img)
 
-    # Draw Header & Category Pill
-    draw.rectangle([60, 60, 1020, 1020], outline='#e5e0d8', width=3)
+    margin = 50 if ratio == '16:9' else 60
+    draw.rectangle([margin, margin, width - margin, height - margin], outline='#e5e0d8', width=3)
     
     fill_color = '#d97757' if slide_num == 1 else '#2b7bb9' if slide_num == 2 else '#c13584' if slide_num == 3 else '#2e7d32'
-    draw.rectangle([100, 100, 480, 150], fill=fill_color)
-    draw.text((115, 115), f"SLIDE {slide_num}/4 • {slide_type[:22].upper()}", fill='#ffffff')
+    draw.rectangle([margin + 40, margin + 40, margin + 480, margin + 90], fill=fill_color)
+    draw.text((margin + 55, margin + 55), f"SLIDE {slide_num}/4 • {slide_type[:24].upper()}", fill='#ffffff')
 
     # Draw Title Text
     words = article.title.split()
     lines = []
     current_line = []
+    line_limit = 45 if ratio == '16:9' else 26
+
     for w in words:
         current_line.append(w)
-        if len(' '.join(current_line)) > 26:
+        if len(' '.join(current_line)) > line_limit:
             lines.append(' '.join(current_line[:-1]))
             current_line = [w]
     if current_line:
         lines.append(' '.join(current_line))
 
-    y = 220
+    y = margin + 140
     for line in lines[:3]:
-        draw.text((100, y), line, fill='#1f1e1b')
+        draw.text((margin + 40, y), line, fill='#1f1e1b')
         y += 65
 
     # Body snippet context per slide type
     if article.body:
         if slide_num == 1:
-            snippet = (article.body[:180] + "...").strip()
+            snippet = f"🔥 HEADLINE BANNER HOOK:\n{(article.body[:240] + '...').strip()}"
         elif slide_num == 2:
-            snippet = f"BACKGROUND & CONTEXT:\n{article.body[:220]}...".strip()
+            snippet = f"💡 CONCEPT VISUALIZATION & CONTEXT:\n{article.body[:280]}...".strip()
         elif slide_num == 3:
-            snippet = f"INDUSTRY IMPACT:\n{(article.body[150:380] if len(article.body) > 150 else article.body[:220])}...".strip()
+            snippet = f"🔬 DEEP STRATEGIC ANALYSIS & IMPACT:\n{(article.body[150:420] if len(article.body) > 150 else article.body[:280])}...".strip()
         else:
-            snippet = f"WHAT DO YOU THINK?\nLeave your thoughts in the comments below!\nSource: {article.source}".strip()
+            snippet = f"💬 COMMUNITY DISCUSSION & TAKEAWAY:\nWhat do you think of this breakthrough? Drop your thoughts below!\nSource: {article.source}".strip()
 
-        draw.text((100, y + 30), snippet, fill='#6e6b65')
+        draw.text((margin + 40, y + 25), snippet, fill='#6e6b65')
 
     # Footer Branding
-    draw.line([(100, 960), (980, 960)], fill=fill_color, width=2)
-    draw.text((100, 980), f"NewsFlow AI • Nano Banana Studio • {niche}", fill='#9e9a91')
+    draw.line([(margin + 40, height - margin - 50), (width - margin - 40, height - margin - 50)], fill=fill_color, width=2)
+    draw.text((margin + 40, height - margin - 35), f"NewsFlow AI • Nano Banana Studio ({ratio}) • {niche}", fill='#9e9a91')
 
     img.save(output_path)
 

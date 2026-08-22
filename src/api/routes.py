@@ -644,6 +644,18 @@ def generate_custom_nano_banana_image(payload: Dict[str, Any]):
         }
 
 
+@router.api_route("/articles/{article_id}/slides", methods=["GET", "POST"])
+def get_or_create_article_slides(article_id: int):
+    """Generates and returns 4-slide catalog images (1 Banner Title + 3 Context slides) for a top post."""
+    from src.ai.image_gen import generate_carousel_slides
+    slide_urls = generate_carousel_slides(article_id)
+    return {
+        "success": True,
+        "article_id": article_id,
+        "slides": slide_urls
+    }
+
+
 @router.get("/placeholder/{width}/{height}")
 def placeholder_image(width: int = 400, height: int = 220):
     """Returns a clean SVG placeholder card when article image is pending generation."""

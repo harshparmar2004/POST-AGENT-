@@ -838,3 +838,50 @@ body.dark-theme {
   color: #fff;
   font-size: 0.85rem;
 }
+
+/* ------------------------------------------------------------
+   3D Interactive Agentic Canvas Space Styles
+   ------------------------------------------------------------ */
+.node-3d-card {
+  background: #FAF7F2;
+  border: 1px solid var(--border-color);
+  border-radius: 12px;
+  padding: 16px 14px;
+  text-align: center;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.06);
+  cursor: pointer;
+  transition: all 0.25s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  transform: perspective(600px) rotateX(4deg);
+}
+
+.node-3d-card:hover {
+  transform: perspective(600px) rotateX(0deg) translateY(-6px);
+  border-color: var(--primary-purple);
+  box-shadow: 0 16px 36px rgba(217, 119, 87, 0.18);
+}
+
+.node-badge {
+  display: inline-block;
+  font-size: 0.64rem;
+  font-weight: 800;
+  letter-spacing: 0.05em;
+  padding: 3px 8px;
+  border-radius: 4px;
+}
+
+.btn-node-inspect {
+  display: inline-block;
+  margin-top: 12px;
+  font-size: 0.74rem;
+  font-weight: 600;
+  color: var(--primary-purple);
+  background: rgba(217, 119, 87, 0.1);
+  padding: 4px 10px;
+  border-radius: 4px;
+  transition: all 0.15s ease;
+}
+
+.node-3d-card:hover .btn-node-inspect {
+  background: var(--primary-purple);
+  color: #ffffff;
+}

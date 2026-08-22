@@ -150,6 +150,7 @@ const App = {
     });
 
     const pageTitles = {
+      space: { title: '🌌 3D Interactive Agentic Space', subtitle: 'Observe, prompt, and execute the end-to-end AI content automation pipeline in 3D' },
       dashboard: { title: 'Dashboard Overview', subtitle: 'Real-time 4-pillar content automation analytics and live system status' },
       sources: { title: 'Pillar 1: News Ingestion & Web Scrapers', subtitle: 'Manage news source links, RSS feeds, and trigger automated crawlers' },
       ranking: { title: 'Pillar 2: AI News Agent Ranking & Filter', subtitle: 'Scores news from 1 to 100 based on custom AI Ranking Rules and viral potential' },
@@ -168,7 +169,9 @@ const App = {
     const container = document.getElementById('page-container');
     container.innerHTML = '<div class="glass-card"><p>Loading page content...</p></div>';
 
-    if (page === 'dashboard' && typeof DashboardPage !== 'undefined') {
+    if (page === 'space' && typeof SpacePage !== 'undefined') {
+      SpacePage.render(container);
+    } else if (page === 'dashboard' && typeof DashboardPage !== 'undefined') {
       DashboardPage.render(container);
     } else if (page === 'articles' && typeof ArticlesPage !== 'undefined') {
       ArticlesPage.render(container);

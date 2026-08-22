@@ -115,7 +115,52 @@ def generate_image(article_id: int) -> bool:
         return True
 
 
-def _create_pil_slide_card(article: Article, niche: str, output_path: str):
+def generate_carousel_slides(article_id: int) -> list[str]:
+    """
+    Generates a 4-card slide deck catalog (1 Main Title Banner + 3 Context/Description cards)
+    for a top-ranked article using Nano Banana & PIL fallback.
+    """
+    images_dir = os.path.join(os.getcwd(), 'images')
+    os.makedirs(images_dir, exist_ok=True)
+
+    slide_paths = []
+
+    with get_session() as session:
+        article = session.query(Article).filter(Article.id == article_id).first()
+        if not article:
+            return []
+
+        niche = os.getenv('NICHE_FOCUS', 'Technology & AI')
+
+        # Slide 1: Main Title Banner Card
+        p1 = os.path.join(images_dir, f"{article_id}_slide1.png")
+        _create_pil_slide_card(article, niche, p1, slide_type="Banner Title Card", slide_num=1)
+        slide_paths.append(f"/api/images/{article_id}_slide1.png")
+
+        # Slide 2: Key Insight Context Card
+        p2 = os.path.join(images_dir, f"{article_id}_slide2.png")
+        _create_pil_slide_card(article, niche, p2, slide_type="Key Insight & Background", slide_num=2)
+        slide_paths.append(f"/api/images/{article_id}_slide2.png")
+
+        # Slide 3: Deep Analysis Description Card
+        p3 = os.path.join(images_dir, f"{article_id}_slide3.png")
+        _create_pil_slide_card(article, niche, p3, slide_type="Deep Analysis & Impact", slide_num=3)
+        slide_paths.append(f"/api/images/{article_id}_slide3.png")
+
+        # Slide 4: Discussion & CTA Card
+        p4 = os.path.join(images_dir, f"{article_id}_slide4.png")
+        _create_pil_slide_card(article, niche, p4, slide_type="Community Discussion & CTA", slide_num=4)
+        slide_paths.append(f"/api/images/{article_id}_slide4.png")
+
+        # Also set primary image_path
+        article.image_path = p1
+        article.status = 'ready'
+        session.commit()
+
+    return slide_paths
+
+
+def _create_pil_slide_card(article: Article, niche: str, output_path: str, slide_type: str = "Banner Title Card", slide_num: int = 1):
     """
     Renders a high-resolution 1080x1080 social media slide card using PIL.
     """
@@ -124,8 +169,10 @@ def _create_pil_slide_card(article: Article, niche: str, output_path: str):
 
     # Draw Header & Category Pill
     draw.rectangle([60, 60, 1020, 1020], outline='#e5e0d8', width=3)
-    draw.rectangle([100, 100, 340, 145], fill='#d97757')
-    draw.text((115, 112), f"NICHE: {niche[:16].upper()}", fill='#ffffff')
+    
+    fill_color = '#d97757' if slide_num == 1 else '#2b7bb9' if slide_num == 2 else '#c13584' if slide_num == 3 else '#2e7d32'
+    draw.rectangle([100, 100, 480, 150], fill=fill_color)
+    draw.text((115, 115), f"SLIDE {slide_num}/4 • {slide_type[:22].upper()}", fill='#ffffff')
 
     # Draw Title Text
     words = article.title.split()
@@ -140,18 +187,26 @@ def _create_pil_slide_card(article: Article, niche: str, output_path: str):
         lines.append(' '.join(current_line))
 
     y = 220
-    for line in lines[:4]:
+    for line in lines[:3]:
         draw.text((100, y), line, fill='#1f1e1b')
         y += 65
 
-    # Body snippet
+    # Body snippet context per slide type
     if article.body:
-        snippet = article.body[:200] + "..."
+        if slide_num == 1:
+            snippet = (article.body[:180] + "...").strip()
+        elif slide_num == 2:
+            snippet = f"BACKGROUND & CONTEXT:\n{article.body[:220]}...".strip()
+        elif slide_num == 3:
+            snippet = f"INDUSTRY IMPACT:\n{(article.body[150:380] if len(article.body) > 150 else article.body[:220])}...".strip()
+        else:
+            snippet = f"WHAT DO YOU THINK?\nLeave your thoughts in the comments below!\nSource: {article.source}".strip()
+
         draw.text((100, y + 30), snippet, fill='#6e6b65')
 
     # Footer Branding
-    draw.line([(100, 960), (980, 960)], fill='#d97757', width=2)
-    draw.text((100, 980), "NewsFlow AI • Powered by Nano Banana & Multi-LLM Engine", fill='#9e9a91')
+    draw.line([(100, 960), (980, 960)], fill=fill_color, width=2)
+    draw.text((100, 980), f"NewsFlow AI • Nano Banana Studio • {niche}", fill='#9e9a91')
 
     img.save(output_path)
 

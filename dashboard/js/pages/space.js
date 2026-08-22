@@ -6,7 +6,7 @@ const SpacePage = {
   articles: [],
   selectedArticleId: null,
 
-  async render(container) {
+  render(container) {
     container.innerHTML = `
       <div style="display: flex; flex-direction: column; gap: 20px;">
         
@@ -27,7 +27,7 @@ const SpacePage = {
         </div>
 
         <!-- 3D Isometric Agentic Canvas Space -->
-        <div class="glass-card" style="position: relative; overflow: hidden; min-height: 480px; background: #FAF7F2; border: 2px solid var(--primary-purple); padding: 30px;">
+        <div class="glass-card" style="position: relative; overflow: hidden; min-height: 440px; background: #FAF7F2; border: 2px solid var(--primary-purple); padding: 30px;">
           
           <!-- Background 3D Perspective Grid -->
           <div style="position: absolute; inset: 0; background-image: radial-gradient(#d97757 0.75px, transparent 0.75px), radial-gradient(#2b7bb9 0.75px, #faf7f2 0.75px); background-size: 30px 30px; background-position: 0 0, 15px 15px; opacity: 0.25; transform: perspective(1000px) rotateX(15deg); pointer-events: none;"></div>
@@ -118,7 +118,7 @@ const SpacePage = {
 
           <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px;" id="space-slides-preview-grid">
             <div class="glass-card" style="grid-column: 1 / -1; text-align: center; padding: 40px;">
-              <p>Select a top-ranked article above to load its 4-slide catalog cards.</p>
+              <p>Loading Top 10 articles into 3D Space...</p>
             </div>
           </div>
         </div>
@@ -128,7 +128,8 @@ const SpacePage = {
 
     if (window.lucide) window.lucide.createIcons();
 
-    await this.loadSpaceData();
+    // Asynchronously load space data without blocking page render
+    setTimeout(() => this.loadSpaceData(), 50);
   },
 
   async loadSpaceData() {
@@ -149,7 +150,10 @@ const SpacePage = {
         
         // Default select first top article
         select.value = top10[0].id;
-        this.onSelectArticle(top10[0].id);
+        this.renderDefaultSlides(top10[0].id);
+      } else {
+        const grid = document.getElementById('space-slides-preview-grid');
+        if (grid) grid.innerHTML = '<div class="glass-card" style="grid-column: 1 / -1; text-align: center; padding: 30px;"><p>No articles found. Run the scraper to populate 3D Space!</p></div>';
       }
 
       if (window.lucide) window.lucide.createIcons();
@@ -158,43 +162,47 @@ const SpacePage = {
     }
   },
 
+  renderDefaultSlides(articleId) {
+    const grid = document.getElementById('space-slides-preview-grid');
+    if (!grid || !articleId) return;
+
+    const labels = [
+      "🖼️ Slide 1: Main Title Banner Card",
+      "🖼️ Slide 2: Key Context & Background",
+      "🖼️ Slide 3: Detailed Breakdown",
+      "🖼️ Slide 4: Community Discussion & CTA"
+    ];
+
+    const slides = [
+      `/api/images/${articleId}_slide1.png`,
+      `/api/images/${articleId}_slide2.png`,
+      `/api/images/${articleId}_slide3.png`,
+      `/api/images/${articleId}_slide4.png`
+    ];
+
+    grid.innerHTML = slides.map((imgUrl, i) => `
+      <div class="glass-card" style="padding: 10px; text-align: center;">
+        <div style="position: relative; height: 180px; border-radius: 6px; overflow: hidden; background: #ffffff; border: 1px solid var(--border-color); margin-bottom: 8px;">
+          <img src="${imgUrl}" alt="${labels[i]}" style="width: 100%; height: 100%; object-fit: contain;" onerror="this.src='/api/placeholder/400/220'" />
+        </div>
+        <span style="font-size: 0.76rem; font-weight: 600; color: var(--text-main); font-family: var(--font-serif);">${labels[i]}</span>
+      </div>
+    `).join('');
+
+    if (window.lucide) window.lucide.createIcons();
+  },
+
   async onSelectArticle(articleId) {
     if (!articleId) return;
     this.selectedArticleId = articleId;
-    const grid = document.getElementById('space-slides-preview-grid');
-    if (!grid) return;
-
-    grid.innerHTML = '<div class="glass-card" style="grid-column: 1 / -1; text-align: center; padding: 30px;"><p>Generating 4-slide catalog deck with Nano Banana...</p></div>';
+    this.renderDefaultSlides(articleId);
 
     try {
-      // Trigger 4-slide generation if not generated
-      const res = await App.fetchApi(`/api/articles/${articleId}/slides`, { method: 'POST' });
-      const slides = res.slides || [
-        `/api/images/${articleId}_slide1.png`,
-        `/api/images/${articleId}_slide2.png`,
-        `/api/images/${articleId}_slide3.png`,
-        `/api/images/${articleId}_slide4.png`
-      ];
-
-      const labels = [
-        "🖼️ Slide 1: Main Title Banner Card",
-        "🖼️ Slide 2: Key Context & Background",
-        "🖼️ Slide 3: Detailed Breakdown",
-        "🖼️ Slide 4: Community Discussion & CTA"
-      ];
-
-      grid.innerHTML = slides.map((imgUrl, i) => `
-        <div class="glass-card" style="padding: 10px; text-align: center;">
-          <div style="position: relative; height: 180px; border-radius: 6px; overflow: hidden; background: #ffffff; border: 1px solid var(--border-color); margin-bottom: 8px;">
-            <img src="${imgUrl}" alt="${labels[i]}" style="width: 100%; height: 100%; object-fit: contain;" onerror="this.src='/api/placeholder/400/220'" />
-          </div>
-          <span style="font-size: 0.76rem; font-weight: 600; color: var(--text-main); font-family: var(--font-serif);">${labels[i]}</span>
-        </div>
-      `).join('');
-
-      if (window.lucide) window.lucide.createIcons();
+      // Trigger background 4-slide generation request
+      await App.fetchApi(`/api/articles/${articleId}/slides`, { method: 'POST' });
+      this.renderDefaultSlides(articleId);
     } catch (err) {
-      grid.innerHTML = `<div class="glass-card" style="grid-column: 1 / -1; text-align: center; padding: 20px;"><p class="error">Failed to generate 4-slide deck: ${err.message}</p></div>`;
+      console.warn("Background slide generation notice:", err);
     }
   },
 

@@ -180,7 +180,6 @@ def stage_image_gen(max_articles: int | None = None) -> int:
 
     with get_session() as session:
         articles = session.query(Article).filter(
-            Article.twitter_text.isnot(None),
             Article.image_path.is_(None)
         ).all()
         article_ids = [a.id for a in articles]

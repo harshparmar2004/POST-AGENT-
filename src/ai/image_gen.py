@@ -45,8 +45,21 @@ def generate_image(article_id: int) -> bool:
 
         image_bytes = None
 
-        # 1. Try Nano Banana / Imagen 3 via Google GenAI SDK
-        if api_key and not api_key.startswith("your_"):
+        # 1. Validate Google API Key format (Valid Google AI Studio keys start with 'AIzaSy')
+        is_valid_key = api_key and api_key.startswith("AIzaSy")
+
+        if not is_valid_key:
+            if api_key and not api_key.startswith("your_"):
+                logger.warning(
+                    f"⚠️ Invalid GOOGLE_API_KEY detected ('{api_key[:10]}...'). "
+                    "Valid Google AI Studio keys start with 'AIzaSy...' (get one free at https://aistudio.google.com/apikey). "
+                    "Rendering PIL Studio graphic fallback."
+                )
+            else:
+                logger.info("No GOOGLE_API_KEY set. Rendering PIL Studio graphic fallback.")
+
+        # Try Nano Banana / Imagen 3 via Google GenAI SDK if valid key provided
+        if is_valid_key:
             try:
                 from google import genai
                 from google.genai import types

@@ -58,52 +58,72 @@ def generate_image(article_id: int) -> bool:
             else:
                 logger.info("No GOOGLE_API_KEY set. Rendering PIL Studio graphic fallback.")
 
-        # Try Nano Banana / Imagen 3 via Google GenAI SDK if valid key provided
+        # Try official Nano Banana models (Nano Banana 2, Nano Banana 2 Lite, Nano Banana Pro, Imagen 3)
         if is_valid_key:
             try:
                 from google import genai
                 from google.genai import types
 
                 client = genai.Client(api_key=api_key)
-                logger.info(f"Generating image for Article #{article_id} using Nano Banana / Imagen 3 ({image_model})...")
+                logger.info(f"Generating image for Article #{article_id} using official Nano Banana engine...")
 
-                # Try Imagen 3 Image Generation API first
-                try:
-                    result = client.models.generate_images(
-                        model=image_model,
-                        prompt=prompt,
-                        config=types.GenerateImagesConfig(
-                            number_of_images=1,
-                            aspect_ratio="1:1"
-                        )
-                    )
-                    if result.generated_images:
-                        image_bytes = result.generated_images[0].image.image_bytes
-                        logger.info(f"Successfully generated Nano Banana image using Imagen 3 model '{image_model}'!")
-                except Exception as img_err:
-                    logger.warning(f"Imagen 3 generate_images call failed: {img_err}")
+                # 1. Try Nano Banana 2 Interactions API (gemini-3.1-flash-image)
+                official_models = [
+                    'gemini-3.1-flash-image',       # Nano Banana 2 (Workhorse)
+                    'gemini-3.1-flash-lite-image',  # Nano Banana 2 Lite (Fast)
+                    'gemini-3-pro-image',           # Nano Banana Pro (Premium)
+                    'gemini-2.5-flash-image'        # Legacy Nano Banana
+                ]
 
-                # Try Gemini Multimodal Flash fallback if needed
-                if not image_bytes:
-                    for model_candidate in ['gemini-2.0-flash-exp', 'gemini-2.0-flash-preview-image-generation']:
-                        try:
-                            resp = client.models.generate_content(
-                                model=model_candidate,
-                                contents=prompt,
-                                config=types.GenerateContentConfig(
-                                    response_modalities=['IMAGE', 'TEXT']
-                                )
+                for m in official_models:
+                    try:
+                        # Try client.interactions.create standard API
+                        if hasattr(client, 'interactions'):
+                            interaction = client.interactions.create(
+                                model=m,
+                                input=prompt,
                             )
-                            if resp.candidates and resp.candidates[0].content and resp.candidates[0].content.parts:
-                                for part in resp.candidates[0].content.parts:
-                                    if part.inline_data:
-                                        image_bytes = part.inline_data.data
-                                        break
-                            if image_bytes:
-                                logger.info(f"Successfully generated Nano Banana image using model '{model_candidate}'!")
+                            if hasattr(interaction, 'output_image') and interaction.output_image:
+                                import base64
+                                image_bytes = base64.b64decode(interaction.output_image.data)
+                                logger.info(f"Successfully generated Nano Banana image using model '{m}' via Interactions API!")
                                 break
-                        except Exception as model_err:
-                            logger.debug(f"Model candidate '{model_candidate}' failed: {model_err}")
+
+                        # Fallback to generate_content
+                        resp = client.models.generate_content(
+                            model=m,
+                            contents=prompt,
+                            config=types.GenerateContentConfig(
+                                response_modalities=['IMAGE', 'TEXT']
+                            )
+                        )
+                        if resp.candidates and resp.candidates[0].content and resp.candidates[0].content.parts:
+                            for part in resp.candidates[0].content.parts:
+                                if part.inline_data:
+                                    image_bytes = part.inline_data.data
+                                    break
+                        if image_bytes:
+                            logger.info(f"Successfully generated Nano Banana image using model '{m}'!")
+                            break
+                    except Exception as err:
+                        logger.debug(f"Model candidate '{m}' failed: {err}")
+
+                # 2. Try Imagen 3 generate_images API if needed
+                if not image_bytes:
+                    try:
+                        result = client.models.generate_images(
+                            model=image_model,
+                            prompt=prompt,
+                            config=types.GenerateImagesConfig(
+                                number_of_images=1,
+                                aspect_ratio="1:1"
+                            )
+                        )
+                        if result.generated_images:
+                            image_bytes = result.generated_images[0].image.image_bytes
+                            logger.info(f"Successfully generated image using Imagen 3 model '{image_model}'!")
+                    except Exception as img_err:
+                        logger.warning(f"Imagen 3 generate_images call failed: {img_err}")
 
             except Exception as ex:
                 logger.warning(f"Nano Banana API generation failed: {ex}. Using PIL Graphic fallback.")

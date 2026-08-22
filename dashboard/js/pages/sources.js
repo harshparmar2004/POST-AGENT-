@@ -1,13 +1,9 @@
 /**
- * Pillar 1: Scraped Data Vault & Web Sources Manager
- * Features dual tabs:
- * 1. 📦 Scraped Data Box Vault — Grid of all raw scraped news items from the internet with body excerpts & source metrics
- * 2. 🌐 Configured News Feeds — 18 permanent RSS & ScrapeGraph feeds with full Edit/Delete CRUD
+ * News Sources Links Manager — Monitored Web & RSS Feeds (18 Permanent Feeds)
+ * Manages source URLs, scrape tiers, category tags, subreddits, crawl delay, Edit, Delete, and Add Source URL modal.
  */
 const SourcesPage = {
   sourcesData: [],
-  scrapedArticles: [],
-  activeTab: 'scraped',
 
   async render(container) {
     container.innerHTML = `
@@ -16,12 +12,12 @@ const SourcesPage = {
         <!-- Header -->
         <div style="display: flex; align-items: center; justify-content: space-between;">
           <div>
-            <h3 style="font-family: var(--font-serif); font-size: 1.35rem;">📥 Pillar 1: Scraped Data Vault & Web Sources Manager</h3>
-            <p style="font-size: 0.85rem; color: var(--text-muted);">View all raw scraped news items ingested from 18 web & RSS feeds across the internet.</p>
+            <h3 style="font-family: var(--font-serif); font-size: 1.35rem;">🌐 Monitored Web & RSS Feeds (News Sources Links)</h3>
+            <p style="font-size: 0.85rem; color: var(--text-muted);">Active news websites and RSS feeds monitored continuously by the web scraper engine.</p>
           </div>
           <div style="display: flex; gap: 10px;">
-            <button class="btn btn-secondary" onclick="SourcesPage.refreshData()">
-              <i data-lucide="refresh-cw"></i> Refresh Vault
+            <button class="btn btn-secondary" onclick="SourcesPage.loadSources()">
+              <i data-lucide="refresh-cw"></i> Refresh Sources List
             </button>
             <button class="btn btn-primary btn-glow" onclick="SourcesPage.openAddModal()">
               <i data-lucide="plus"></i> Add Source URL
@@ -29,31 +25,9 @@ const SourcesPage = {
           </div>
         </div>
 
-        <!-- View Switcher Tabs -->
-        <div style="display: flex; align-items: center; justify-content: space-between; background: var(--bg-card); padding: 12px 18px; border-radius: 10px; border: 1px solid var(--border-color);">
-          <div style="display: flex; gap: 8px;">
-            <button class="btn btn-secondary ${this.activeTab === 'scraped' ? 'active-tab' : ''}" style="padding: 7px 16px; font-size: 0.84rem;" onclick="SourcesPage.setTab('scraped')">
-              📦 Scraped Data Boxes Vault (<span id="vault-scraped-count">0</span> Scraped Items)
-            </button>
-            <button class="btn btn-secondary ${this.activeTab === 'feeds' ? 'active-tab' : ''}" style="padding: 7px 16px; font-size: 0.84rem;" onclick="SourcesPage.setTab('feeds')">
-              🌐 Monitored Web & RSS Feeds (<span id="vault-sources-count">18</span> Permanent Feeds)
-            </button>
-          </div>
-          <span style="font-size: 0.8rem; color: var(--text-muted); font-weight: 600;" id="tab-status-label">Raw Scraped Data Boxes</span>
-        </div>
-
-        <!-- Tab 1: Scraped Data Boxes Vault Grid -->
-        <div id="tab-content-scraped" style="display: ${this.activeTab === 'scraped' ? 'block' : 'none'};">
-          <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(360px, 1fr)); gap: 18px;" id="scraped-data-boxes-grid">
-            <div class="glass-card" style="grid-column: 1 / -1; text-align: center; padding: 40px;"><p>Loading raw scraped data boxes...</p></div>
-          </div>
-        </div>
-
-        <!-- Tab 2: Configured Feeds Grid -->
-        <div id="tab-content-feeds" style="display: ${this.activeTab === 'feeds' ? 'block' : 'none'};">
-          <div class="sources-grid" id="sources-grid">
-            <div class="glass-card"><p>Loading configured news feeds...</p></div>
-          </div>
+        <!-- 18 Permanent Feeds Grid -->
+        <div class="sources-grid" id="sources-grid">
+          <div class="glass-card"><p>Loading monitored web & RSS feeds...</p></div>
         </div>
 
       </div>
@@ -61,101 +35,16 @@ const SourcesPage = {
 
     if (window.lucide) window.lucide.createIcons();
 
-    await this.refreshData();
-  },
-
-  setTab(tabName) {
-    this.activeTab = tabName;
-    
-    const tabScraped = document.getElementById('tab-content-scraped');
-    const tabFeeds = document.getElementById('tab-content-feeds');
-    const label = document.getElementById('tab-status-label');
-
-    if (tabScraped) tabScraped.style.display = tabName === 'scraped' ? 'block' : 'none';
-    if (tabFeeds) tabFeeds.style.display = tabName === 'feeds' ? 'block' : 'none';
-    if (label) label.textContent = tabName === 'scraped' ? 'Raw Scraped Data Boxes' : '18 Configured Web & RSS Feeds';
-
-    const tabs = document.querySelectorAll('.active-tab');
-    tabs.forEach(t => t.classList.remove('active-tab'));
-    this.render();
-  },
-
-  async refreshData() {
-    await Promise.all([this.loadScrapedData(), this.loadSources()]);
-  },
-
-  async loadScrapedData() {
-    const grid = document.getElementById('scraped-data-boxes-grid');
-    const countSpan = document.getElementById('vault-scraped-count');
-    if (!grid) return;
-
-    try {
-      const data = await App.fetchApi('/api/articles?limit=80');
-      this.scrapedArticles = data.articles || [];
-
-      if (countSpan) countSpan.textContent = this.scrapedArticles.length;
-
-      if (this.scrapedArticles.length === 0) {
-        grid.innerHTML = '<div class="glass-card" style="grid-column: 1 / -1; text-align: center; padding: 40px;"><p>No scraped articles found in database. Run the scraper engine!</p></div>';
-        return;
-      }
-
-      grid.innerHTML = this.scrapedArticles.map(a => {
-        const bodySnippet = a.body ? (a.body.length > 200 ? a.body.substring(0, 200) + '...' : a.body) : 'Raw headline scraped from source web feed.';
-
-        return `
-          <div class="glass-card article-box-card" onclick="App.openArticleModal(${a.id})">
-            
-            <!-- Box Header -->
-            <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px;">
-              <div style="display: flex; align-items: center; gap: 8px;">
-                <span class="source-pill">${a.source || 'RSS Web Feed'}</span>
-                <span class="badge badge-${a.status}">${a.status.toUpperCase()}</span>
-              </div>
-              <span style="font-size: 0.74rem; font-weight: 700; color: var(--primary-purple); background: var(--bg-surface); padding: 3px 8px; border-radius: 4px; border: 1px solid var(--border-color);">
-                ID #${a.id}
-              </span>
-            </div>
-
-            <!-- Scraped Headline Title -->
-            <h4 class="article-box-title">
-              ${a.title}
-            </h4>
-
-            <!-- Raw Scraped Body Excerpt Box -->
-            <p class="article-box-body">
-              ${bodySnippet}
-            </p>
-
-            <!-- Box Metadata Footer -->
-            <div style="display: flex; align-items: center; justify-content: space-between; margin-top: 12px; padding-top: 10px; border-top: 1px solid var(--border-color);">
-              <div style="font-size: 0.74rem; color: var(--text-muted);">
-                Scraped: <strong>${App.formatTimestamp(a.scraped_at)}</strong>
-              </div>
-              <span style="font-size: 0.75rem; color: var(--primary-purple); font-weight: 600;">Inspect Raw Data 🔍</span>
-            </div>
-
-          </div>
-        `;
-      }).join('');
-
-      if (window.lucide) window.lucide.createIcons();
-
-    } catch (e) {
-      console.error("Failed to load scraped data boxes", e);
-    }
+    await this.loadSources();
   },
 
   async loadSources() {
     const grid = document.getElementById('sources-grid');
-    const countSpan = document.getElementById('vault-sources-count');
     if (!grid) return;
 
     try {
       const data = await App.fetchApi('/api/sources');
       this.sourcesData = data.sources || [];
-
-      if (countSpan) countSpan.textContent = this.sourcesData.length;
 
       if (!this.sourcesData || this.sourcesData.length === 0) {
         grid.innerHTML = '<div class="glass-card"><p>No sources found in sources.yaml</p></div>';
@@ -178,7 +67,7 @@ const SourcesPage = {
                 ${s.feed_url || s.url}
               </div>
 
-              <!-- Articles Scraped Metric -->
+              <!-- Articles Scraped Metric Placed On Top -->
               <div style="margin-top: 10px; font-size: 0.85rem; color: var(--text-muted);">
                 Articles scraped: <strong style="font-size: 1.1rem; color: var(--primary-purple);">${s.article_count}</strong>
               </div>
@@ -306,7 +195,7 @@ const SourcesPage = {
 
       App.showToast(res.message, 'success');
       this.closeEditModal();
-      this.refreshData();
+      this.loadSources();
     } catch (err) {
       App.showToast(`Failed to update source: ${err.message}`, 'error');
     }
@@ -318,12 +207,12 @@ const SourcesPage = {
     try {
       const res = await App.fetchApi(`/api/sources/${index}/delete`, { method: 'POST' });
       App.showToast(res.message, 'info');
-      this.refreshData();
+      this.loadSources();
     } catch (err) {
       try {
         const res = await App.fetchApi(`/api/sources/${index}`, { method: 'DELETE' });
         App.showToast(res.message, 'info');
-        this.refreshData();
+        this.loadSources();
       } catch (e2) {
         App.showToast(`Failed to delete source: ${err.message}`, 'error');
       }

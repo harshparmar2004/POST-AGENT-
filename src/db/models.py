@@ -140,8 +140,24 @@ _SessionFactory = sessionmaker(bind=_engine, expire_on_commit=False)
 
 
 def init_db() -> None:
-    """Create all tables if they don't already exist."""
+    """Create all tables if they don't already exist and apply automatic column migrations."""
     Base.metadata.create_all(_engine)
+
+    # Auto-migration for SQLite columns added in model updates
+    try:
+        from sqlalchemy import text
+        with _engine.connect() as conn:
+            result = conn.execute(text("PRAGMA table_info(articles)"))
+            columns = [row[1] for row in result.fetchall()]
+
+            if "rank_score" not in columns:
+                conn.execute(text("ALTER TABLE articles ADD COLUMN rank_score INTEGER DEFAULT 75"))
+                conn.commit()
+            if "rank_reason" not in columns:
+                conn.execute(text("ALTER TABLE articles ADD COLUMN rank_reason TEXT"))
+                conn.commit()
+    except Exception as ex:
+        pass
 
 
 def get_session() -> Session:

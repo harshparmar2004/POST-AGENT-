@@ -1,5 +1,7 @@
 /**
- * Articles Page Renderer — Searchable, filterable table with high-contrast UI & social logos
+ * Articles Vault Renderer — Interactive Box Card Grid System
+ * Each scraped article is displayed in a clean, readable card box with full title,
+ * body excerpt, AI Rank Score, platform chips, and click-to-open detail modal.
  */
 const ArticlesPage = {
   currentPageNum: 1,
@@ -8,48 +10,39 @@ const ArticlesPage = {
 
   async render(container) {
     container.innerHTML = `
-      <div class="glass-card table-card">
-        <div class="table-header-tools" style="display: flex; align-items: center; justify-content: space-between; gap: 16px; margin-bottom: 20px;">
+      <div style="display: flex; flex-direction: column; gap: 20px;">
+        
+        <!-- Search & Filter Controls Toolbar -->
+        <div class="glass-card" style="display: flex; align-items: center; justify-content: space-between; gap: 16px; padding: 16px 20px;">
           <div class="search-box" style="position: relative; flex: 1; max-width: 480px;">
             <i data-lucide="search" style="position: absolute; left: 14px; top: 50%; transform: translateY(-50%); color: var(--text-muted); width: 18px; height: 18px; pointer-events: none;"></i>
-            <input type="text" id="articles-search-input" placeholder="Search headlines, body text or sources..." value="${this.currentSearch}" style="width: 100%; padding: 10px 14px 10px 42px; border-radius: 8px; background: var(--bg-surface); border: 1px solid var(--border-color); color: var(--text-main); font-size: 0.88rem; outline: none;">
+            <input type="text" id="articles-search-input" placeholder="Search scraped headlines, body text, or sources..." value="${this.currentSearch}" style="width: 100%; padding: 10px 14px 10px 42px; border-radius: 8px; background: var(--bg-surface); border: 1px solid var(--border-color); color: var(--text-main); font-size: 0.88rem; outline: none;">
           </div>
 
-          <div style="display: flex; gap: 10px;">
-            <select id="status-filter-select" class="filter-select" style="padding: 10px 16px; border-radius: 8px; background: var(--bg-surface); border: 1px solid var(--border-color); color: var(--text-main); font-weight: 600; font-size: 0.85rem;">
-              <option value="all" ${this.currentStatus === 'all' ? 'selected' : ''}>All Statuses</option>
-              <option value="scraped" ${this.currentStatus === 'scraped' ? 'selected' : ''}>Scraped</option>
-              <option value="ready" ${this.currentStatus === 'ready' ? 'selected' : ''}>Ready</option>
-              <option value="published" ${this.currentStatus === 'published' ? 'selected' : ''}>Published</option>
-              <option value="queued" ${this.currentStatus === 'queued' ? 'selected' : ''}>Queued</option>
+          <div style="display: flex; gap: 10px; align-items: center;">
+            <select id="status-filter-select" class="filter-select" style="padding: 9px 16px; border-radius: 8px; font-weight: 600; font-size: 0.85rem;">
+              <option value="all" ${this.currentStatus === 'all' ? 'selected' : ''}>All Scraped Articles</option>
+              <option value="ready" ${this.currentStatus === 'ready' ? 'selected' : ''}>Ready for Posting</option>
+              <option value="scraped" ${this.currentStatus === 'scraped' ? 'selected' : ''}>Scraped Only</option>
+              <option value="published" ${this.currentStatus === 'published' ? 'selected' : ''}>Published Live</option>
             </select>
           </div>
         </div>
 
-        <table class="data-table">
-          <thead>
-            <tr>
-              <th style="width: 38%;">HEADLINE</th>
-              <th style="width: 15%;">SOURCE</th>
-              <th style="width: 12%;">STATUS</th>
-              <th style="width: 15%;">PLATFORMS</th>
-              <th style="width: 14%;">SCRAPED AT</th>
-              <th style="width: 6%; text-align: center;">ACTION</th>
-            </tr>
-          </thead>
-          <tbody id="articles-tbody">
-            <tr><td colspan="6" style="text-align: center; padding: 30px;">Loading articles...</td></tr>
-          </tbody>
-        </table>
+        <!-- Articles Grid of Box Cards -->
+        <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(360px, 1fr)); gap: 18px;" id="articles-boxes-grid">
+          <div class="glass-card" style="grid-column: 1 / -1; text-align: center; padding: 40px;"><p>Loading scraped articles vault...</p></div>
+        </div>
 
         <!-- Pagination Controls -->
-        <div style="display: flex; align-items: center; justify-content: space-between; margin-top: 20px; padding-top: 14px; border-top: 1px solid var(--border-color);">
-          <span style="font-size: 0.82rem; color: var(--text-muted); font-weight: 500;" id="pagination-info">Page 1 of 1</span>
+        <div class="glass-card" style="display: flex; align-items: center; justify-content: space-between; padding: 14px 20px;">
+          <span style="font-size: 0.84rem; color: var(--text-muted); font-weight: 600;" id="pagination-info">Page 1 of 1</span>
           <div style="display: flex; gap: 8px;">
-            <button class="btn btn-secondary" id="prev-page-btn" style="padding: 6px 14px; font-size: 0.8rem;">← Previous</button>
-            <button class="btn btn-secondary" id="next-page-btn" style="padding: 6px 14px; font-size: 0.8rem;">Next →</button>
+            <button class="btn btn-secondary" id="prev-page-btn" style="padding: 7px 16px; font-size: 0.82rem;">← Previous</button>
+            <button class="btn btn-secondary" id="next-page-btn" style="padding: 7px 16px; font-size: 0.82rem;">Next →</button>
           </div>
         </div>
+
       </div>
     `;
 
@@ -101,9 +94,9 @@ const ArticlesPage = {
   },
 
   async loadArticles() {
-    const tbody = document.getElementById('articles-tbody');
+    const grid = document.getElementById('articles-boxes-grid');
     const info = document.getElementById('pagination-info');
-    if (!tbody) return;
+    if (!grid) return;
 
     try {
       let url = `/api/articles?page=${this.currentPageNum}&limit=12`;
@@ -115,56 +108,77 @@ const ArticlesPage = {
       const pag = data.pagination;
 
       if (info) {
-        info.textContent = `Page ${pag.page} of ${pag.total_pages} (${pag.total} total articles)`;
+        info.textContent = `Page ${pag.page} of ${pag.total_pages} (${pag.total} total scraped articles)`;
       }
 
       if (!articles || articles.length === 0) {
-        tbody.innerHTML = '<tr><td colspan="6" style="text-align: center; padding: 40px; color: var(--text-muted);">No articles found matching your criteria.</td></tr>';
+        grid.innerHTML = '<div class="glass-card" style="grid-column: 1 / -1; text-align: center; padding: 40px;"><p>No articles found in vault. Run the web scraper to ingest articles.</p></div>';
         return;
       }
 
-      tbody.innerHTML = articles.map(a => {
+      grid.innerHTML = articles.map(a => {
         const isReddit = a.platforms && a.platforms.reddit;
         const isTwitter = a.platforms && a.platforms.twitter;
         const isInsta = a.platforms && a.platforms.instagram;
         const isLinkedIn = a.platforms && a.platforms.linkedin;
 
+        const score = a.rank_score || 75;
+        const scoreColor = score >= 80 ? '#2e7d32' : score >= 60 ? '#2b7bb9' : '#d97757';
+        const bodySnippet = a.body ? (a.body.length > 180 ? a.body.substring(0, 180) + '...' : a.body) : 'Scraped headline available.';
+
         return `
-          <tr>
-            <td class="article-title-cell" onclick="App.openArticleModal(${a.id})" title="${a.title}">
+          <div class="glass-card article-box-card" onclick="App.openArticleModal(${a.id})">
+            
+            <!-- Box Header -->
+            <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px;">
+              <div style="display: flex; align-items: center; gap: 8px;">
+                <span class="source-pill">${a.source}</span>
+                <span class="badge badge-${a.status}">${a.status.toUpperCase()}</span>
+              </div>
+              <span style="font-size: 0.78rem; font-weight: 700; color: ${scoreColor}; background: var(--bg-surface); padding: 3px 8px; border-radius: 4px; border: 1px solid ${scoreColor};">
+                ★ ${score}/100
+              </span>
+            </div>
+
+            <!-- Box Headline -->
+            <h4 class="article-box-title">
               ${a.title}
-            </td>
-            <td onclick="App.openArticleModal(${a.id})">
-              <span class="source-pill">${a.source}</span>
-            </td>
-            <td onclick="App.openArticleModal(${a.id})">
-              <span class="badge badge-${a.status}">${a.status}</span>
-            </td>
-            <td onclick="App.openArticleModal(${a.id})">
+            </h4>
+
+            <!-- Box Body Snippet -->
+            <p class="article-box-body">
+              ${bodySnippet}
+            </p>
+
+            <!-- Box Footer: Platforms & Actions -->
+            <div style="display: flex; align-items: center; justify-content: space-between; margin-top: 12px; padding-top: 10px; border-top: 1px solid var(--border-color);">
+              
+              <!-- Social Chips -->
               <div class="platform-chips">
-                <span class="platform-chip reddit ${isReddit ? 'active' : ''}" title="Reddit (${isReddit ? 'Published' : 'Pending'})">
+                <span class="platform-chip reddit ${isReddit ? 'active' : ''}" title="Reddit">
                   <i data-lucide="message-square"></i>
                 </span>
-                <span class="platform-chip twitter ${isTwitter ? 'active' : ''}" title="Twitter/X (${isTwitter ? 'Published' : 'Pending'})">
+                <span class="platform-chip twitter ${isTwitter ? 'active' : ''}" title="Twitter/X">
                   <i data-lucide="share-2"></i>
                 </span>
-                <span class="platform-chip instagram ${isInsta ? 'active' : ''}" title="Instagram (${isInsta ? 'Queued/Published' : 'Pending'})">
+                <span class="platform-chip instagram ${isInsta ? 'active' : ''}" title="Instagram">
                   <i data-lucide="camera"></i>
                 </span>
-                <span class="platform-chip linkedin ${isLinkedIn ? 'active' : ''}" title="LinkedIn (${isLinkedIn ? 'Queued/Published' : 'Pending'})">
+                <span class="platform-chip linkedin ${isLinkedIn ? 'active' : ''}" title="LinkedIn">
                   <i data-lucide="briefcase"></i>
                 </span>
               </div>
-            </td>
-            <td style="color: var(--text-muted); font-size: 0.74rem; font-weight: 500;" onclick="App.openArticleModal(${a.id})">
-              ${App.formatTimestamp(a.scraped_at)}
-            </td>
-            <td style="text-align: center;">
-              <button class="btn-icon" style="color: var(--status-failed); width: 30px; height: 30px;" onclick="ArticlesPage.deleteArticle(${a.id}, event)" title="Delete Article">
-                <i data-lucide="trash-2" style="width: 14px; height: 14px;"></i>
-              </button>
-            </td>
-          </tr>
+
+              <div style="display: flex; align-items: center; gap: 6px;">
+                <span style="font-size: 0.75rem; color: var(--primary-purple); font-weight: 600;">Inspect Box 🔍</span>
+                <button class="btn-icon danger" style="width: 28px; height: 28px;" onclick="ArticlesPage.deleteArticle(${a.id}, event)" title="Delete Article">
+                  <i data-lucide="trash-2" style="width: 13px; height: 13px;"></i>
+                </button>
+              </div>
+
+            </div>
+
+          </div>
         `;
       }).join('');
 

@@ -932,3 +932,44 @@ body.dark-theme {
   border-color: var(--primary-purple) !important;
   font-weight: 700 !important;
 }
+
+/* ------------------------------------------------------------
+   Interactive Articles Box Card Grid System
+   ------------------------------------------------------------ */
+.article-box-card {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  padding: 16px 18px;
+  background: #ffffff;
+  border: 1px solid var(--border-color);
+  border-radius: 10px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.article-box-card:hover {
+  transform: translateY(-3px);
+  border-color: var(--primary-purple);
+  box-shadow: 0 8px 24px rgba(217, 119, 87, 0.12);
+}
+
+.article-box-title {
+  font-family: var(--font-serif);
+  font-size: 1.05rem;
+  font-weight: 600;
+  line-height: 1.38;
+  margin-bottom: 8px;
+  color: var(--text-main);
+}
+
+.article-box-body {
+  font-size: 0.83rem;
+  color: var(--text-muted);
+  line-height: 1.48;
+  margin-bottom: 8px;
+  background: var(--bg-surface);
+  padding: 8px 12px;
+  border-radius: 6px;
+  border: 1px solid var(--border-color);
+}

@@ -885,3 +885,43 @@ body.dark-theme {
   background: var(--primary-purple);
   color: #ffffff;
 }
+
+.node-3d-card.vertical-node {
+  width: 100%;
+  padding: 18px 22px;
+  transform: perspective(800px) rotateX(2deg);
+}
+
+.node-3d-card.vertical-node:hover {
+  transform: perspective(800px) rotateX(0deg) translateY(-4px);
+}
+
+.vertical-connector {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 8px 0;
+  position: relative;
+}
+
+.connector-line {
+  height: 28px;
+  width: 2px;
+  border-left: 2px dashed var(--primary-purple);
+  margin-bottom: 4px;
+}
+
+.connector-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: var(--bg-surface);
+  border: 1px solid rgba(217, 119, 87, 0.3);
+  padding: 4px 12px;
+  border-radius: 20px;
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: var(--primary-purple);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+}
